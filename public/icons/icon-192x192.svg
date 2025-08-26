@@ -1,0 +1,39 @@
+<svg width="192" height="192" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f2c245;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e6b63d;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background Circle -->
+  <circle cx="96" cy="96" r="88" fill="url(#grad1)" stroke="#1a170f" stroke-width="4"/>
+  
+  <!-- Shrimp Icon -->
+  <g transform="translate(48, 48)">
+    <!-- Shrimp Body -->
+    <path d="M20 40 Q40 20 60 40 Q80 60 60 80 Q40 100 20 80 Q0 60 20 40" 
+          fill="#ffffff" stroke="#1a170f" stroke-width="2"/>
+    
+    <!-- Shrimp Tail -->
+    <path d="M60 60 Q80 50 90 60 Q80 70 60 60" 
+          fill="#ffffff" stroke="#1a170f" stroke-width="2"/>
+    
+    <!-- Shrimp Eyes -->
+    <circle cx="35" cy="45" r="3" fill="#1a170f"/>
+    <circle cx="45" cy="45" r="3" fill="#1a170f"/>
+    
+    <!-- Shrimp Antennae -->
+    <path d="M25 35 Q15 25 10 20" stroke="#1a170f" stroke-width="2" fill="none"/>
+    <path d="M55 35 Q65 25 70 20" stroke="#1a170f" stroke-width="2" fill="none"/>
+    
+    <!-- Water Bubbles -->
+    <circle cx="70" cy="30" r="2" fill="#ffffff" opacity="0.8"/>
+    <circle cx="75" cy="25" r="1.5" fill="#ffffff" opacity="0.6"/>
+    <circle cx="80" cy="20" r="1" fill="#ffffff" opacity="0.4"/>
+  </g>
+  
+  <!-- App Name -->
+  <text x="96" y="160" text-anchor="middle" font-family="Arial, sans-serif" 
+        font-size="16" font-weight="bold" fill="#1a170f">ShrimpSense</text>
+</svg>

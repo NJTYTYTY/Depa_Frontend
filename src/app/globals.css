@@ -1,0 +1,124 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* PWA Standalone Mode Styles - Native App Experience */
+@media (display-mode: standalone) {
+  html, body {
+    background: #fcfaf7;
+    color: #171412;
+    /* Ensure full screen appearance without breaking scroll */
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100vh; /* Use min-height for scrollability */
+    
+    /* Prevent any browser UI from showing */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: none;
+  }
+
+  /* Hide all browser UI elements in standalone mode */
+  .standalone-only {
+    display: block;
+  }
+
+  /* Ensure proper safe area handling for notches */
+  @supports (padding: max(0px)) {
+    body {
+      padding-left: max(0px, env(safe-area-inset-left));
+      padding-right: max(0px, env(safe-area-inset-right));
+      padding-top: max(0px, env(safe-area-inset-top));
+      padding-bottom: max(0px, env(safe-area-inset-bottom));
+    }
+  }
+
+  /* Prevent pull-to-refresh and bounce effects */
+  body {
+    overscroll-behavior-y: none;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* PWA Minimal-UI Mode Styles - Fallback for browsers that don't support standalone */
+@media (display-mode: minimal-ui) {
+  html, body {
+    background: #fcfaf7;
+    color: #171412;
+    /* Ensure full screen appearance without breaking scroll */
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100vh; /* Use min-height for scrollability */
+    
+    /* Prevent any browser UI from showing */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: none;
+  }
+}
+
+
+
+/* Hide elements when not in standalone mode */
+@media (display-mode: browser) {
+  .standalone-only {
+    display: none;
+  }
+}
+
+/* iOS Safari specific styles for standalone mode */
+@supports (-webkit-touch-callout: none) {
+  body {
+    /* Prevent bounce scrolling on iOS */
+    -webkit-overflow-scrolling: touch;
+    overflow-scrolling: touch;
+  }
+}
+
+
+
+/* Ensure the main content area is scrollable */
+/* This assumes your main content is within a div that takes up the remaining height */
+/* You might need to adjust this based on your actual layout structure */
+body > div { /* Target the direct child of body, which is likely your main app container */
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Example for a scrollable content area within the main app container */
+.scrollable-content {
+  flex-grow: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
