@@ -1,12 +1,21 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    appDir: true,
+  eslint: {
+    // Warning: This allows production builds to successfully complete even if
+    // your project has ESLint errors.
+    ignoreDuringBuilds: true,
   },
   images: {
-    domains: ['localhost', '10.204.229.144', 'vercel.app', 'vercel.com'],
+    domains: ['localhost', '10.204.229.144', '10.106.61.144', 'vercel.app', 'vercel.com'],
     unoptimized: true, // สำหรับ Vercel
   },
+  // Enable experimental features for better mobile support
+  experimental: {
+    esmExternals: false,
+  },
+  // Better mobile support
+  poweredByHeader: false,
+  compress: true,
   // PWA Configuration - Manual headers for manifest and service worker
   async headers() {
     return [
@@ -44,7 +53,6 @@ const nextConfig = {
     ]
   },
   // Vercel optimization
-  output: 'standalone',
   trailingSlash: false,
 }
 

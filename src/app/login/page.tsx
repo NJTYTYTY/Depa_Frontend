@@ -3,25 +3,52 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { apiClient } from '@/lib/api-client'
 
 export default function LoginPage() {
   const [phoneNumber, setPhoneNumber] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!phoneNumber || !password) return
+    if (!phoneNumber || !password) {
+      setError('กรุณากรอกเบอร์โทรและรหัสผ่าน')
+      return
+    }
     
     setIsLoading(true)
+    setError('')
     
-    // TODO: Implement actual authentication
-    // For now, simulate login
-    setTimeout(() => {
+    try {
+      // Call backend API
+      const response = await apiClient.login({
+        phone_number: phoneNumber,
+        password: password
+      })
+      
+      if (response.error) {
+        setError(response.error)
+        return
+      }
+      
+      if (response.data) {
+        // Store tokens in localStorage
+        localStorage.setItem('access_token', response.data.access_token)
+        localStorage.setItem('refresh_token', response.data.refresh_token)
+        localStorage.setItem('user_phone', phoneNumber)
+        
+        // Redirect to ponds page
+        router.push('/ponds')
+      }
+    } catch (error) {
+      setError('เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์')
+      console.error('Login error:', error)
+    } finally {
       setIsLoading(false)
-      router.push('/ponds')
-    }, 1000)
+    }
   }
 
   return (
@@ -80,6 +107,13 @@ export default function LoginPage() {
               </div>
             </div>
 
+            {/* Error Message */}
+            {error && (
+              <div className="error-message">
+                <span>{error}</span>
+              </div>
+            )}
+
             {/* Forgot Password */}
             <div className="forgot-password">
               <div className="forgot-password-text">
@@ -101,6 +135,15 @@ export default function LoginPage() {
                     </div>
                   </div>
                 </button>
+              </div>
+            </div>
+
+            {/* Demo Credentials */}
+            <div className="demo-credentials">
+              <div className="demo-text">
+                <strong>Demo Account:</strong><br />
+                เบอร์โทร: 0812345678<br />
+                รหัสผ่าน: admin123
               </div>
             </div>
           </form>
@@ -254,6 +297,19 @@ export default function LoginPage() {
           line-height: 24px;
         }
 
+        /* Error Message Styles */
+        .error-message {
+          width: 100%;
+          max-width: 320px;
+          text-align: center;
+          padding: 8px 16px;
+          background-color: #fee;
+          border: 1px solid #fcc;
+          border-radius: 8px;
+          color: #c33;
+          font-size: 14px;
+        }
+
         /* Forgot Password Styles */
         .forgot-password {
           width: 100%;
@@ -346,6 +402,25 @@ export default function LoginPage() {
           font-size: 16px;
           text-align: center;
           line-height: 24px;
+        }
+
+        /* Demo Credentials Styles */
+        .demo-credentials {
+          width: 100%;
+          max-width: 320px;
+          text-align: center;
+          padding: 16px;
+          background-color: #f8f9fa;
+          border: 1px solid #e9ecef;
+          border-radius: 12px;
+          margin-top: 10px;
+        }
+
+        .demo-text {
+          font-family: 'Inter', 'Noto Sans Thai', sans-serif;
+          font-size: 12px;
+          color: #6c757d;
+          line-height: 1.4;
         }
 
         /* Responsive Design */

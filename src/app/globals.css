@@ -122,3 +122,14 @@ body > div { /* Target the direct child of body, which is likely your main app c
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
+
+/* Hide Tanstack Query DevTools to prevent extra scroll */
+.tsqd-parent-container {
+  display: none !important;
+}
+
+/* Prevent body scroll overflow */
+body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}

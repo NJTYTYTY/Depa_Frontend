@@ -16,8 +16,7 @@ export default function HistoryPage() {
   }
 
   return (
-    <div className="history-container">
-      <div className="main-frame">
+    <div className="w-full flex flex-col h-full bg-[#fcfaf7]">
         {/* Header */}
         <div className="header">
           <div className="header-content">
@@ -45,8 +44,49 @@ export default function HistoryPage() {
           <div className="file-section">
             <div className="file-item">
               <div className="file-info">
-                <h3>File Dowlaod</h3>
+                <h3>Log File - 2024-01-15</h3>
                 <div className="file-date">2024-01-15 10:30 AM</div>
+                <div className="file-size">2.5 MB</div>
+              </div>
+              <div className="file-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <g clipPath="url(#clip0_4_619)">
+                    <path fillRule="evenodd" clipRule="evenodd" d="M20.0306 7.71938L14.7806 2.46937C14.6399 2.32876 14.449 2.24984 14.25 2.25H5.25C4.42157 2.25 3.75 2.92157 3.75 3.75V20.25C3.75 21.0784 4.42157 21.75 5.25 21.75H18.75C19.5784 21.75 20.25 21.0784 20.25 20.25V8.25C20.2502 8.05103 20.1712 7.86015 20.0306 7.71938V7.71938ZM15 4.81031L17.6897 7.5H15V4.81031ZM18.75 20.25H5.25V3.75H13.5V8.25C13.5 8.66421 13.8358 9 14.25 9H18.75V20.25V20.25Z" fill="#171412"/>
+                  </g>
+                  <defs>
+                    <clipPath id="clip0_4_619">
+                      <rect width="24" height="24" fill="white"/>
+                    </clipPath>
+                  </defs>
+                </svg>
+              </div>
+            </div>
+
+            <div className="file-item">
+              <div className="file-info">
+                <h3>Log File - 2024-01-14</h3>
+                <div className="file-date">2024-01-14 09:15 AM</div>
+                <div className="file-size">2.3 MB</div>
+              </div>
+              <div className="file-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <g clipPath="url(#clip0_4_619)">
+                    <path fillRule="evenodd" clipRule="evenodd" d="M20.0306 7.71938L14.7806 2.46937C14.6399 2.32876 14.449 2.24984 14.25 2.25H5.25C4.42157 2.25 3.75 2.92157 3.75 3.75V20.25C3.75 21.0784 4.42157 21.75 5.25 21.75H18.75C19.5784 21.75 20.25 21.0784 20.25 20.25V8.25C20.2502 8.05103 20.1712 7.86015 20.0306 7.71938V7.71938ZM15 4.81031L17.6897 7.5H15V4.81031ZM18.75 20.25H5.25V3.75H13.5V8.25C13.5 8.66421 13.8358 9 14.25 9H18.75V20.25V20.25Z" fill="#171412"/>
+                  </g>
+                  <defs>
+                    <clipPath id="clip0_4_619">
+                      <rect width="24" height="24" fill="white"/>
+                    </clipPath>
+                  </defs>
+                </svg>
+              </div>
+            </div>
+
+            <div className="file-item">
+              <div className="file-info">
+                <h3>Log File - 2024-01-13</h3>
+                <div className="file-date">2024-01-13 08:45 AM</div>
+                <div className="file-size">2.1 MB</div>
               </div>
               <div className="file-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -70,7 +110,6 @@ export default function HistoryPage() {
             </button>
           </div>
         </div>
-      </div>
 
       <style jsx>{`
         * {
@@ -96,11 +135,10 @@ export default function HistoryPage() {
 
         .main-frame {
           background-color: #fcfaf7;
-          min-height: 844px;
+          min-height: 100vh;
           width: 100%;
           display: flex;
           flex-direction: column;
-          justify-content: space-between;
         }
 
         /* Header Styles */
@@ -210,6 +248,14 @@ export default function HistoryPage() {
           font-size: 14px;
           line-height: 17px;
           color: #6b7280;
+          margin-bottom: 4px;
+        }
+
+        .file-size {
+          font-family: 'Inter', sans-serif;
+          font-size: 12px;
+          line-height: 15px;
+          color: #9ca3af;
         }
 
         .file-icon {

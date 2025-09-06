@@ -1,5 +1,15 @@
 {
   "version": 2,
+  "env": {
+    "GEMINI_API_KEY": "@gemini-api-key",
+    "NEXT_PUBLIC_API_URL": "@backend-api-url"
+  },
+  "build": {
+    "env": {
+      "GEMINI_API_KEY": "@gemini-api-key",
+      "NEXT_PUBLIC_API_URL": "@backend-api-url"
+    }
+  },
   "routes": [
     {
       "src": "/manifest.json",

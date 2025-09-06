@@ -1,67 +1,48 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { apiClient } from '@/lib/api-client'
-import { useAuthStore } from '@/providers/auth-provider'
+import { apiClient, LoginCredentials, User } from '@/lib/api-client'
+import { useAuth } from '@/providers/auth-provider'
 import { useRouter } from 'next/navigation'
-import type { User } from '@/lib/types'
-
-interface LoginCredentials {
-  email: string
-  password: string
-}
-
-interface LoginResponse {
-  user: User
-  token: string
-}
-
-interface ProfileResponse {
-  data: User
-}
 
 export function useLogin() {
-  const { login } = useAuthStore()
+  const { login } = useAuth()
   const router = useRouter()
   
   return useMutation({
-    mutationFn: async (credentials: LoginCredentials): Promise<LoginResponse> => {
-      const response = await apiClient.login(credentials)
-      // Ensure we return LoginResponse by properly typing the response
-      // First convert to unknown, then to LoginResponse
-      const typedResponse = response as unknown as LoginResponse
-      return typedResponse
+    mutationFn: async (credentials: LoginCredentials) => {
+      const success = await login(credentials.phone_number, credentials.password)
+      if (!success) {
+        throw new Error('Login failed')
+      }
     },
-    onSuccess: (data: LoginResponse) => {
-      login(data.user, data.token)
+    onSuccess: () => {
       router.push('/ponds')
     },
   })
 }
 
 export function useLogout() {
-  const { logout } = useAuthStore()
+  const { logout } = useAuth()
   const router = useRouter()
   
   return useMutation({
     mutationFn: async (): Promise<void> => {
-      // TODO: Implement actual logout API call
-      // For now, just simulate the API call
-      await new Promise(resolve => setTimeout(resolve, 100))
+      // Logout is handled by the auth provider
+      logout()
     },
     onSuccess: () => {
-      logout()
       router.push('/login')
     },
   })
 }
 
 export function useProfile() {
+  const { user } = useAuth()
+  
   return useQuery({
     queryKey: ['profile'],
-    queryFn: async (): Promise<User> => {
-      const response = await apiClient.getProfile()
-      // Ensure we return User by properly typing the response
-      const typedResponse = response as ProfileResponse
-      return typedResponse.data
+    queryFn: async (): Promise<User | null> => {
+      return user
     },
+    enabled: !!user,
   })
 }

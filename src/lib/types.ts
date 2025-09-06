@@ -11,6 +11,11 @@ export interface Pond {
   name: string
   location?: string
   notes?: string
+  date?: string
+  size?: string
+  dimensions?: string
+  depth?: string
+  shrimp_count?: number
   owner_user_id: string
   external_id?: string
   created_at: string
@@ -98,5 +103,10 @@ export interface CreatePondRequest {
   name: string
   location?: string
   notes?: string
+  date?: string
+  size?: number
+  dimensions?: string
+  depth?: number
+  shrimp_count?: number
   external_id?: string
 }

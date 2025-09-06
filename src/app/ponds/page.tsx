@@ -1,47 +1,12 @@
 'use client'
 
-import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-
-interface Pond {
-  id: string
-  name: string
-  date: string
-  size: string
-  dimensions: string
-  depth: string
-}
+import { usePonds, useDeletePond } from '@/hooks/use-ponds'
 
 export default function ShrimpPondsPage() {
   const router = useRouter()
-  
-  // Mock data for ponds
-  const [ponds] = useState<Pond[]>([
-    {
-      id: '1',
-      name: 'บ่อที่ 1',
-      date: '2024-01-15',
-      size: '3 ไร่',
-      dimensions: '100m x 500m',
-      depth: '1.5m depth'
-    },
-    {
-      id: '2',
-      name: 'บ่อที่ 2',
-      date: '2024-01-15',
-      size: '3 rai',
-      dimensions: '100m x 500m',
-      depth: '1.5m depth'
-    },
-    {
-      id: '3',
-      name: 'บ่อที่ 3',
-      date: '2024-01-15',
-      size: '3 ไร่',
-      dimensions: '100m x 500m',
-      depth: '1.5m depth'
-    }
-  ])
+  const { data: ponds, isLoading, error } = usePonds()
+  const deletePondMutation = useDeletePond()
 
   const addPond = () => {
     router.push('/ponds/add')
@@ -49,6 +14,45 @@ export default function ShrimpPondsPage() {
 
   const selectPond = (pondId: string) => {
     router.push(`/ponds/${pondId}`)
+  }
+
+  const deletePond = async (pondId: string, pondName: string) => {
+    if (confirm(`คุณแน่ใจหรือไม่ที่จะลบบ่อ "${pondName}"?`)) {
+      try {
+        await deletePondMutation.mutateAsync(pondId)
+        alert('ลบบ่อเรียบร้อยแล้ว')
+      } catch (error) {
+        console.error('Error deleting pond:', error)
+        const errorMessage = error instanceof Error ? error.message : 'เกิดข้อผิดพลาดในการลบบ่อ'
+        alert(errorMessage)
+      }
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="shrimp-ponds-container">
+        <div className="main-frame">
+          <div className="loading-section">
+            <div className="loading-spinner"></div>
+            <p>กำลังโหลดข้อมูลบ่อ...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="shrimp-ponds-container">
+        <div className="main-frame">
+          <div className="error-section">
+            <p>เกิดข้อผิดพลาดในการโหลดข้อมูลบ่อ</p>
+            <button onClick={() => window.location.reload()}>ลองใหม่</button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -75,26 +79,65 @@ export default function ShrimpPondsPage() {
 
         {/* Pond List */}
         <div className="pond-list">
-          {ponds.map((pond) => (
-            <div key={pond.id} className="pond-item" onClick={() => selectPond(pond.id)}>
-              <div className="pond-content">
-                <div className="pond-info">
-                  <h3 className="pond-title">{pond.name}</h3>
-                  <div className="pond-details">
-                    <p>วันที่ : {pond.date}</p>
-                    <p>ขนาด : {pond.size}</p>
-                    <p>ก. x ย. : {pond.dimensions}</p>
-                    <p>ความลึก : {pond.depth}</p>
+          {!ponds || ponds.length === 0 ? (
+            <div className="empty-state">
+              <p>ยังไม่มีบ่อในระบบ</p>
+              <button className="add-first-pond-btn" onClick={addPond}>
+                เพิ่มบ่อแรก
+              </button>
+            </div>
+          ) : (
+            ponds && ponds.length > 0 ? ponds.map((pond) => (
+              <div key={pond.id} className="pond-item">
+                <div className="pond-content" onClick={() => selectPond(pond.id)}>
+                  <div className="pond-info">
+                    <h3 className="pond-title">{pond.name}</h3>
+                    <div className="pond-details">
+                      <div className="detail-row">
+                        <span className="detail-label">ขนาดบ่อ:</span>
+                        <span className="detail-value">{pond.size || 'ยังไม่ได้ระบุ'}</span>
+                      </div>
+                      <div className="detail-row">
+                        <span className="detail-label">วันที่ลงบ่อ:</span>
+                        <span className="detail-value">{pond.date || 'ยังไม่ได้ระบุ'}</span>
+                      </div>
+                      <div className="detail-row">
+                        <span className="detail-label">ขนาด ก x ย:</span>
+                        <span className="detail-value">{pond.dimensions || 'ยังไม่ได้ระบุ'}</span>
+                      </div>
+                      <div className="detail-row">
+                        <span className="detail-label">ความลึกบ่อ:</span>
+                        <span className="detail-value">{pond.depth || 'ยังไม่ได้ระบุ'}</span>
+                      </div>
+                      <div className="detail-row">
+                        <span className="detail-label">จำนวนลูกกุ้งที่ปล่อย:</span>
+                        <span className="detail-value">{pond.shrimp_count ? `${pond.shrimp_count} ตัว` : 'ยังไม่ได้ระบุ'}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div className="pond-arrow">
-                  <svg width="18" height="16" viewBox="0 0 18 16" fill="none">
-                    <path fillRule="evenodd" clipRule="evenodd" d="M18 8C18 8.41421 17.6642 8.75 17.25 8.75H2.56031L8.03063 14.2194C8.32368 14.5124 8.32368 14.9876 8.03063 15.2806C7.73757 15.5737 7.26243 15.5737 6.96937 15.2806L0.219375 8.63063C0.0785421 8.48995 -0.000590086 8.29906 -0.000590086 8.1C-0.000590086 7.90094 0.0785421 7.71005 0.219375 7.56937L6.96937 0.719375C7.26243 0.426319 7.73757 0.426319 8.03063 0.719375C8.32368 1.01243 8.32368 1.48757 8.03063 1.78062L2.56031 8.25H17.25C17.6642 8.25 18 8.58579 18 9V9Z" fill="#1A170F"/>
+                <button 
+                  className="delete-pond-btn"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    deletePond(pond.id, pond.name)
+                  }}
+                  title="ลบบ่อ"
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M12 4L4 12M4 4L12 12" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
-                </div>
+                </button>
               </div>
-            </div>
-          ))}
+            )) : (
+              <div className="empty-state">
+                <p>ยังไม่มีบ่อในระบบ</p>
+                <button className="add-first-pond-btn" onClick={addPond}>
+                  เพิ่มบ่อแรก
+                </button>
+              </div>
+            )
+          )}
         </div>
       </div>
 
@@ -196,20 +239,29 @@ export default function ShrimpPondsPage() {
           border-radius: 12px;
           padding: 20px;
           border: 1px solid #e5e7eb;
-          cursor: pointer;
           transition: all 0.2s;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+          display: flex;
+          align-items: flex-start;
+          position: relative;
+          gap: 12px;
         }
 
         .pond-item:hover {
-          transform: translateY(-2px);
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         .pond-content {
           display: flex;
-          align-items: center;
+          align-items: flex-start;
           justify-content: space-between;
+          flex: 1;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .pond-content:hover {
+          transform: translateY(-2px);
         }
 
         .pond-info {
@@ -225,25 +277,161 @@ export default function ShrimpPondsPage() {
         }
 
         .pond-details {
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
+          margin-top: 8px;
         }
 
-        .pond-details p {
+        .detail-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 4px;
+          padding: 2px 0;
+        }
+
+        .detail-row:last-child {
+          margin-bottom: 0;
+        }
+
+        .detail-label {
           font-family: 'Inter', 'Noto Sans Thai', sans-serif;
-          font-size: 14px;
+          font-size: 13px;
+          color: #6b7280;
+          font-weight: 500;
+          min-width: 80px;
+        }
+
+        .detail-value {
+          font-family: 'Inter', 'Noto Sans Thai', sans-serif;
+          font-size: 13px;
+          color: #374151;
+          font-weight: 400;
+          text-align: right;
+          flex: 1;
+        }
+
+
+        .delete-pond-btn {
+          background: none;
+          border: none;
+          padding: 8px;
+          cursor: pointer;
+          border-radius: 6px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s ease;
+          opacity: 0.7;
+          flex-shrink: 0;
+        }
+
+        .delete-pond-btn:hover {
+          background-color: #FEE2E2;
+          opacity: 1;
+          transform: scale(1.1);
+        }
+
+        .delete-pond-btn:active {
+          transform: scale(0.95);
+        }
+
+        /* Loading State */
+        .loading-section {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 60px 20px;
+          text-align: center;
+        }
+
+        .loading-spinner {
+          width: 40px;
+          height: 40px;
+          border: 4px solid #f3f3f3;
+          border-top: 4px solid #f2c245;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+          margin-bottom: 16px;
+        }
+
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+
+        .loading-section p {
+          font-family: 'Inter', 'Noto Sans Thai', sans-serif;
+          font-size: 16px;
           color: #6b7280;
           margin: 0;
         }
 
-        .pond-arrow {
-          width: 24px;
-          height: 24px;
+        /* Error State */
+        .error-section {
           display: flex;
+          flex-direction: column;
           align-items: center;
           justify-content: center;
-          margin-left: 16px;
+          padding: 60px 20px;
+          text-align: center;
+        }
+
+        .error-section p {
+          font-family: 'Inter', 'Noto Sans Thai', sans-serif;
+          font-size: 16px;
+          color: #dc2626;
+          margin: 0 0 16px 0;
+        }
+
+        .error-section button {
+          background-color: #f2c245;
+          border: none;
+          border-radius: 8px;
+          padding: 12px 24px;
+          font-family: 'Inter', 'Noto Sans Thai', sans-serif;
+          font-weight: 600;
+          font-size: 14px;
+          color: #1a170f;
+          cursor: pointer;
+          transition: background-color 0.2s;
+        }
+
+        .error-section button:hover {
+          background-color: #e6b63d;
+        }
+
+        /* Empty State */
+        .empty-state {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 60px 20px;
+          text-align: center;
+        }
+
+        .empty-state p {
+          font-family: 'Inter', 'Noto Sans Thai', sans-serif;
+          font-size: 16px;
+          color: #6b7280;
+          margin: 0 0 24px 0;
+        }
+
+        .add-first-pond-btn {
+          background-color: #f2c245;
+          border: none;
+          border-radius: 12px;
+          padding: 16px 32px;
+          font-family: 'Inter', 'Noto Sans Thai', sans-serif;
+          font-weight: 700;
+          font-size: 16px;
+          color: #1a170f;
+          cursor: pointer;
+          transition: background-color 0.2s;
+        }
+
+        .add-first-pond-btn:hover {
+          background-color: #e6b63d;
         }
 
         /* Responsive Design */

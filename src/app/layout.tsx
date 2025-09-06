@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import QueryProvider from '@/providers/query-provider'
+import { AuthProvider } from '@/providers/auth-provider'
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -22,7 +23,6 @@ export const metadata: Metadata = {
   other: {
     'mobile-web-app-capable': 'yes',
     'msapplication-TileColor': '#f2c245',
-    'msapplication-config': '/browserconfig.xml',
   },
 }
 
@@ -49,8 +49,6 @@ export default function RootLayout({
         
         {/* PWA Icons */}
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png" />
         <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192x192.png" />
         <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512x512.png" />
         
@@ -60,16 +58,14 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="ShrimpSense" />
         <meta name="msapplication-TileColor" content="#f2c245" />
-        <meta name="msapplication-config" content="/browserconfig.xml" />
-        
-        {/* PWA Installation Script */}
-        <script src="/pwa-install.js" defer></script>
       </head>
       <body className={inter.className}>
         <QueryProvider>
-          <ServiceWorkerRegistration>
-            {children}
-          </ServiceWorkerRegistration>
+          <AuthProvider>
+            <ServiceWorkerRegistration>
+              {children}
+            </ServiceWorkerRegistration>
+          </AuthProvider>
         </QueryProvider>
       </body>
     </html>

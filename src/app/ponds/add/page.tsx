@@ -2,23 +2,33 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useCreatePond, usePonds } from '@/hooks/use-ponds'
+import type { CreatePondRequest } from '@/lib/types'
 
 interface PondFormData {
   date: string
   size: string
   dimensions: string
   depth: string
+  shrimp_count: string
 }
 
 export default function AddPondPage() {
   const router = useRouter()
+  const createPondMutation = useCreatePond()
+  const { data: existingPonds = [] } = usePonds()
   const [formData, setFormData] = useState<PondFormData>({
     date: '',
     size: '',
     dimensions: '',
-    depth: ''
+    depth: '',
+    shrimp_count: ''
   })
   const [errors, setErrors] = useState<Partial<PondFormData>>({})
+  
+  // Debug logging
+  console.log('🔍 AddPondPage - existingPonds:', existingPonds)
+  console.log('🔍 AddPondPage - createPondMutation:', createPondMutation)
 
   const handleInputChange = (field: keyof PondFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -35,6 +45,7 @@ export default function AddPondPage() {
     if (!formData.size.trim()) newErrors.size = 'กรุณากรอกขนาดบ่อ'
     if (!formData.dimensions.trim()) newErrors.dimensions = 'กรุณากรอกขนาดบ่อ'
     if (!formData.depth.trim()) newErrors.depth = 'กรุณากรอกความลึก'
+    // shrimp_count is optional - no validation needed
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -43,20 +54,45 @@ export default function AddPondPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
+    console.log('🔍 handleSubmit - formData:', formData)
+    console.log('🔍 handleSubmit - existingPonds length:', existingPonds.length)
+    
     if (!validateForm()) {
+      console.log('❌ Form validation failed')
       return
     }
 
     try {
-      // TODO: Implement actual API call to create pond
-      // await createPond(formData)
+      // สร้างชื่อบ่อตามลำดับ
+      const pondNumber = existingPonds.length + 1
+      const pondName = `บ่อที่ ${pondNumber}`
       
-      // For now, simulate success
+      const pondData: CreatePondRequest = {
+        name: pondName,
+        date: formData.date,
+        size: parseFloat(formData.size) || 0,
+        dimensions: formData.dimensions,
+        depth: parseFloat(formData.depth) || 0,
+        shrimp_count: parseInt(formData.shrimp_count) || 0,
+        notes: `บ่อขนาด ${formData.size} ไร่ สร้างเมื่อ ${formData.date} จำนวนลูกกุ้ง ${formData.shrimp_count} ตัว`
+      }
+
+      console.log('📝 Sending pond data:', pondData)
+      console.log('📝 Pond data types:', {
+        name: typeof pondData.name,
+        size: typeof pondData.size,
+        depth: typeof pondData.depth,
+        shrimp_count: typeof pondData.shrimp_count
+      })
+      
+      await createPondMutation.mutateAsync(pondData)
+      
       alert('เพิ่มบ่อใหม่เรียบร้อยแล้ว')
       router.push('/ponds')
     } catch (error) {
       console.error('Error creating pond:', error)
-      alert('เกิดข้อผิดพลาดในการเพิ่มบ่อ')
+      const errorMessage = error instanceof Error ? error.message : 'เกิดข้อผิดพลาดในการเพิ่มบ่อ'
+      alert(errorMessage)
     }
   }
 
@@ -140,6 +176,21 @@ export default function AddPondPage() {
                   placeholder="ความลึกของบ่อ"
                   value={formData.depth}
                   onChange={(e) => handleInputChange('depth', e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Shrimp Count Field */}
+            <div className="input-group">
+              <div className="input-field">
+                <input
+                  type="number"
+                  min="0"
+                  className={`text-input ${errors.shrimp_count ? 'error' : ''}`}
+                  placeholder="จำนวนลูกกุ้งที่ปล่อย (ตัว)"
+                  value={formData.shrimp_count}
+                  onChange={(e) => handleInputChange('shrimp_count', e.target.value)}
                   required
                 />
               </div>

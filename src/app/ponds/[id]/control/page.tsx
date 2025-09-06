@@ -17,8 +17,7 @@ export default function ControlPage() {
   }
 
   return (
-    <div className="control-container">
-      <div className="main-frame">
+    <div className="w-full flex flex-col h-full bg-[#fcfaf7]">
         {/* Header */}
         <div className="header">
           <div className="header-content">
@@ -148,8 +147,48 @@ export default function ControlPage() {
               </div>
             </div>
           </div>
+
+          {/* Additional Control Section */}
+          <div className="additional-controls-section">
+            <div className="section-title">
+              <h2>การตั้งค่าเพิ่มเติม</h2>
+            </div>
+
+            <div className="control-item">
+              <div className="control-content">
+                <div className="control-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="#1A170F"/>
+                  </svg>
+                </div>
+                <div className="control-info">
+                  <h3>3. ระบบแจ้งเตือน</h3>
+                  <p>เปิด/ปิดการแจ้งเตือนอัตโนมัติ</p>
+                </div>
+              </div>
+              <div className="toggle-switch" onClick={(e) => toggleSwitch(e.currentTarget)}>
+                <div className="toggle-slider"></div>
+              </div>
+            </div>
+
+            <div className="control-item">
+              <div className="control-content">
+                <div className="control-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="#1A170F"/>
+                  </svg>
+                </div>
+                <div className="control-info">
+                  <h3>4. ระบบบันทึกข้อมูล</h3>
+                  <p>เปิด/ปิดการบันทึกข้อมูลอัตโนมัติ</p>
+                </div>
+              </div>
+              <div className="toggle-switch" onClick={(e) => toggleSwitch(e.currentTarget)}>
+                <div className="toggle-slider"></div>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
 
       <style jsx>{`
         * {
@@ -175,11 +214,10 @@ export default function ControlPage() {
 
         .main-frame {
           background-color: #fcfaf7;
-          min-height: 844px;
+          min-height: 100vh;
           width: 100%;
           display: flex;
           flex-direction: column;
-          justify-content: space-between;
         }
 
         /* Header Styles */
@@ -235,7 +273,7 @@ export default function ControlPage() {
         /* Content Area */
         .content-area {
           flex: 1;
-          padding: 16px;
+          padding: 16px 16px 32px 16px;
           display: flex;
           flex-direction: column;
           gap: 24px;
@@ -351,6 +389,15 @@ export default function ControlPage() {
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
+        /* Additional Controls Section */
+        .additional-controls-section {
+          background-color: #ffffff;
+          border-radius: 16px;
+          padding: 24px;
+          border: 1px solid #e5e7eb;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
         .sensor-grid {
           display: flex;
           flex-direction: column;
@@ -409,7 +456,8 @@ export default function ControlPage() {
           }
           
           .equipment-section,
-          .sensor-status-section {
+          .sensor-status-section,
+          .additional-controls-section {
             padding: 20px;
           }
           

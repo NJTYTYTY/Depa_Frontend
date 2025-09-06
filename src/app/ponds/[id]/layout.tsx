@@ -13,147 +13,92 @@ export default function PondLayout({ children }: { children: React.ReactNode }) 
   }
 
   return (
-    <div className="pond-layout">
+    <div className="flex flex-col h-screen relative bg-[#fcfaf7]">
       {/* Main Content */}
-      <div className="main-content">
-        {children}
+      <div className="flex-1 overflow-y-auto bg-[#fcfaf7]">
+        <div className="pb-20">
+          {children}
+        </div>
       </div>
 
       {/* Bottom Navigation */}
-      <div className="bottom-navigation">
+      <div className="fixed bottom-0 left-0 right-0 bg-[#FCFAF7] border-t border-gray-200 flex justify-around items-center py-2 z-50 shadow-lg">
         <Link 
           href={`/ponds/${pondId}`} 
-          className={`nav-item ${isActive('') ? 'active' : ''}`}
+          className={`flex flex-col items-center justify-center px-2 py-2 transition-all duration-200 rounded-lg min-w-[50px] ${
+            isActive('') ? 'text-[#1C170D]' : 'text-[#9C854A] hover:text-[#1C170D] hover:bg-gray-50'
+          }`}
         >
-          <div className="nav-icon">
+          <div className="flex items-center justify-center mb-1">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
               <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               <path d="M9 22V12H15V22" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </div>
-          <span className="nav-text">หน้าแรก</span>
+          <span className="text-xs font-medium text-center">หน้าแรก</span>
         </Link>
 
         <Link 
           href={`/ponds/${pondId}/graph`} 
-          className={`nav-item ${isActive('/graph') ? 'active' : ''}`}
+          className={`flex flex-col items-center justify-center px-2 py-2 transition-all duration-200 rounded-lg min-w-[50px] ${
+            isActive('/graph') ? 'text-[#1C170D]' : 'text-[#9C854A] hover:text-[#1C170D] hover:bg-gray-50'
+          }`}
         >
-          <div className="nav-icon">
+          <div className="flex items-center justify-center mb-1">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
               <path d="M3 3V21H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               <path d="M9 9L12 6L16 10L21 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               <path d="M21 5H16V10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </div>
-          <span className="nav-text">กราฟ</span>
+          <span className="text-xs font-medium text-center">กราฟ</span>
         </Link>
 
         <Link 
           href={`/ponds/${pondId}/history`} 
-          className={`nav-item ${isActive('/history') ? 'active' : ''}`}
+          className={`flex flex-col items-center justify-center px-2 py-2 transition-all duration-200 rounded-lg min-w-[50px] ${
+            isActive('/history') ? 'text-[#1C170D]' : 'text-[#9C854A] hover:text-[#1C170D] hover:bg-gray-50'
+          }`}
         >
-          <div className="nav-icon">
+          <div className="flex items-center justify-center mb-1">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
               <path d="M12 8V12L15 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               <path d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </div>
-          <span className="nav-text">ประวัติ</span>
+          <span className="text-xs font-medium text-center">ประวัติ</span>
         </Link>
 
         <Link 
           href={`/ponds/${pondId}/control`} 
-          className={`nav-item ${isActive('/control') ? 'active' : ''}`}
+          className={`flex flex-col items-center justify-center px-2 py-2 transition-all duration-200 rounded-lg min-w-[50px] ${
+            isActive('/control') ? 'text-[#1C170D]' : 'text-[#9C854A] hover:text-[#1C170D] hover:bg-gray-50'
+          }`}
         >
-          <div className="nav-icon">
+          <div className="flex items-center justify-center mb-1">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
               <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </div>
-          <span className="nav-text">ควบคุม</span>
+          <span className="text-xs font-medium text-center">ควบคุม</span>
+        </Link>
+
+        <Link 
+          href={`/ponds/${pondId}/agent`} 
+          className={`flex flex-col items-center justify-center px-2 py-2 transition-all duration-200 rounded-lg min-w-[50px] ${
+            isActive('/agent') ? 'text-[#1C170D]' : 'text-[#9C854A] hover:text-[#1C170D] hover:bg-gray-50'
+          }`}
+        >
+          <div className="flex items-center justify-center mb-1">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1H5C3.89 1 3 1.89 3 3V21C3 22.11 3.89 23 5 23H19C20.11 23 21 22.11 21 21V9M19 9H14V4H5V21H19V9Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+          <span className="text-xs font-medium text-center">ผู้ช่วย</span>
         </Link>
       </div>
-
-      <style jsx>{`
-        .pond-layout {
-          display: flex;
-          flex-direction: column;
-          height: 100vh;
-          position: relative;
-        }
-
-        .main-content {
-          flex: 1;
-          overflow-y: auto;
-          padding-bottom: 80px; /* Space for bottom navigation */
-        }
-
-        .bottom-navigation {
-          position: fixed;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          background-color: #ffffff;
-          border-top: 1px solid #e5e7eb;
-          display: flex;
-          justify-content: space-around;
-          align-items: center;
-          padding: 8px 0;
-          z-index: 50;
-          box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .nav-item {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          padding: 8px 16px;
-          text-decoration: none;
-          color: #6b7280;
-          transition: all 0.2s;
-          border-radius: 8px;
-          min-width: 60px;
-        }
-
-        .nav-item:hover {
-          color: #6366f1;
-          background-color: #f3f4f6;
-        }
-
-        .nav-item.active {
-          color: #6366f1;
-          background-color: #eef2ff;
-        }
-
-        .nav-icon {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin-bottom: 4px;
-        }
-
-        .nav-text {
-          font-family: 'Inter', 'Noto Sans Thai', sans-serif;
-          font-size: 11px;
-          font-weight: 500;
-          text-align: center;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 480px) {
-          .nav-item {
-            padding: 6px 12px;
-            min-width: 50px;
-          }
-          
-          .nav-text {
-            font-size: 10px;
-          }
-        }
-      `}</style>
     </div>
   )
 }
