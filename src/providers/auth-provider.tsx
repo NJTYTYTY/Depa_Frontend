@@ -8,10 +8,12 @@ interface AuthContextType {
   accessToken: string | null
   isAuthenticated: boolean
   isLoading: boolean
-  login: (phoneNumber: string, password: string) => Promise<boolean>
+  login: (phoneNumber: string, password: string) => Promise<User | null> // เปลี่ยนจาก boolean เป็น User | null
   logout: () => void
   refreshToken: () => Promise<void>
+  setUser: (user: User | null) => void // เพิ่ม setUser function
 }
+
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
@@ -26,6 +28,12 @@ export const useAuth = () => {
 interface AuthProviderProps {
   children: ReactNode
 }
+
+
+  // เพิ่ม setUser function
+  const setUser = (user: User | null) => {
+    setUser(user)
+  }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null)
@@ -76,37 +84,39 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     checkAuth()
   }, [])
 
-  const login = async (phoneNumber: string, password: string): Promise<boolean> => {
+  const login = async (phoneNumber: string, password: string): Promise<User | null> => {
     try {
       const response = await apiClient.login({
         phone_number: phoneNumber,
         password: password
       })
-
+  
       if (response.error) {
         throw new Error(response.error)
       }
-
+  
       if (response.data) {
         // Store tokens
         localStorage.setItem('access_token', response.data.access_token)
         localStorage.setItem('refresh_token', response.data.refresh_token)
         localStorage.setItem('user_phone', phoneNumber)
         setAccessToken(response.data.access_token)
-
+  
         // Get user profile
         const profileResponse = await apiClient.getCurrentUser(response.data.access_token)
         if (profileResponse.data) {
           setUser(profileResponse.data)
-          return true
+          return profileResponse.data // return user object
         }
       }
-      return false
+      return null
     } catch (error) {
       console.error('Login failed:', error)
-      return false
+      return null
     }
   }
+
+
 
   const logout = () => {
     // Clear tokens and user data
@@ -147,6 +157,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }
 
+  // เพิ่ม setUser function
+  const setUserState = (user: User | null) => {
+    setUser(user)
+  }
+
+  // อัพเดท value object
   const value: AuthContextType = {
     user,
     accessToken,
@@ -154,7 +170,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isLoading,
     login,
     logout,
-    refreshToken
+    refreshToken,
+    setUser: setUserState // เพิ่ม setUser
   }
 
   return (

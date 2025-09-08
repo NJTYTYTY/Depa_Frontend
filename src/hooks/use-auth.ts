@@ -4,17 +4,21 @@ import { useAuth } from '@/providers/auth-provider'
 import { useRouter } from 'next/navigation'
 
 export function useLogin() {
-  const { login } = useAuth()
+  const { login, setUser } = useAuth()
   const router = useRouter()
   
   return useMutation({
     mutationFn: async (credentials: LoginCredentials) => {
-      const success = await login(credentials.phone_number, credentials.password)
-      if (!success) {
+      // login ควร return user object ถ้าสำเร็จ
+      const user = await login(credentials.phone_number, credentials.password)
+      if (!user) {
         throw new Error('Login failed')
       }
+      return user
     },
-    onSuccess: () => {
+    onSuccess: (user) => {
+      // อัพเดท state ทันที
+      setUser(user)
       router.push('/ponds')
     },
   })

@@ -39,8 +39,6 @@ export function useHistory(pondId: string, pagination?: Pagination) {
         }
       )
       
-      
-      
       // Ensure we return Event[] by properly typing the response
       const typedResponse = response as HistoryResponse
       return typedResponse.data || []

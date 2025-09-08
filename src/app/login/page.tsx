@@ -1,16 +1,26 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { apiClient } from '@/lib/api-client'
+import { useAuth } from '@/providers/auth-provider'
+import { useLogin } from '@/hooks/use-auth'
+import RouteGuard from '@/components/RouteGuard'
 
 export default function LoginPage() {
   const [phoneNumber, setPhoneNumber] = useState('')
   const [password, setPassword] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
+  const { isAuthenticated } = useAuth()
+  const loginMutation = useLogin()
+
+  // ถ้า login แล้วให้ redirect ไป ponds
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push('/ponds')
+    }
+  }, [isAuthenticated, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -19,40 +29,22 @@ export default function LoginPage() {
       return
     }
     
-    setIsLoading(true)
     setError('')
     
     try {
-      // Call backend API
-      const response = await apiClient.login({
+      await loginMutation.mutateAsync({
         phone_number: phoneNumber,
         password: password
       })
-      
-      if (response.error) {
-        setError(response.error)
-        return
-      }
-      
-      if (response.data) {
-        // Store tokens in localStorage
-        localStorage.setItem('access_token', response.data.access_token)
-        localStorage.setItem('refresh_token', response.data.refresh_token)
-        localStorage.setItem('user_phone', phoneNumber)
-        
-        // Redirect to ponds page
-        router.push('/ponds')
-      }
     } catch (error) {
-      setError('เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์')
+      setError('เกิดข้อผิดพลาดในการเข้าสู่ระบบ')
       console.error('Login error:', error)
-    } finally {
-      setIsLoading(false)
     }
   }
 
   return (
-    <div className="login-container">
+    <RouteGuard requireAuth={false}>
+      <div className="login-container">
       <div className="main-frame">
         <div className="login-form">
           {/* Header */}
@@ -126,12 +118,12 @@ export default function LoginPage() {
               <div className="button-container">
                 <button
                   type="submit"
-                  disabled={isLoading}
+                  disabled={loginMutation.isPending}
                   className="login-button"
                 >
                   <div className="button-content">
                     <div className="button-text">
-                      <span>{isLoading ? 'กำลังเข้าสู่ระบบ...' : 'ล็อกอิน'}</span>
+                      <span>{loginMutation.isPending ? 'กำลังเข้าสู่ระบบ...' : 'ล็อกอิน'}</span>
                     </div>
                   </div>
                 </button>
@@ -531,6 +523,7 @@ export default function LoginPage() {
           }
         }
       `}</style>
-    </div>
+      </div>
+    </RouteGuard>
   )
 }

@@ -12,9 +12,9 @@ export interface Pond {
   location?: string
   notes?: string
   date?: string
-  size?: string
+  size?: number
   dimensions?: string
-  depth?: string
+  depth?: number
   shrimp_count?: number
   owner_user_id: string
   external_id?: string

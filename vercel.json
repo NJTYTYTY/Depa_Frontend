@@ -1,13 +1,14 @@
 {
   "version": 2,
   "env": {
-    "GEMINI_API_KEY": "@gemini-api-key",
-    "NEXT_PUBLIC_API_URL": "@backend-api-url"
+    "GEMINI_API_KEY": "GEMINI_API_KEY",
+    "NEXT_PUBLIC_API_URL": "NEXT_PUBLIC_API_URL"
+    
   },
   "build": {
     "env": {
-      "GEMINI_API_KEY": "@gemini-api-key",
-      "NEXT_PUBLIC_API_URL": "@backend-api-url"
+      "GEMINI_API_KEY": "GEMINI_API_KEY",
+      "NEXT_PUBLIC_API_URL": "NEXT_PUBLIC_API_URL"
     }
   },
   "routes": [
