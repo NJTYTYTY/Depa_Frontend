@@ -18,6 +18,9 @@ export default function ServiceWorkerRegistration({ children }: ServiceWorkerReg
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
   useEffect(() => {
+    // Only run on client side
+    if (typeof window === 'undefined') return;
+
     // Register service worker
     if ('serviceWorker' in navigator) {
       registerServiceWorker();
@@ -33,14 +36,21 @@ export default function ServiceWorkerRegistration({ children }: ServiceWorkerReg
     window.addEventListener('sw-update-available', handleUpdateAvailable as EventListener);
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      window.removeEventListener('appinstalled', handleAppInstalled);
-      window.removeEventListener('sw-update-available', handleUpdateAvailable as EventListener);
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+        window.removeEventListener('appinstalled', handleAppInstalled);
+        window.removeEventListener('sw-update-available', handleUpdateAvailable as EventListener);
+      }
     };
   }, []);
 
   const registerServiceWorker = async () => {
     try {
+      // Check if we're on client side
+      if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
+        return;
+      }
+
       // Detect if running through ngrok or localhost
       const isNgrok = window.location.hostname.includes('ngrok') || 
                       window.location.hostname.includes('ngrok.io') ||
@@ -73,7 +83,9 @@ export default function ServiceWorkerRegistration({ children }: ServiceWorkerReg
       navigator.serviceWorker.addEventListener('controllerchange', () => {
         if (refreshing) return;
         refreshing = true;
-        window.location.reload();
+        if (typeof window !== 'undefined') {
+          window.location.reload();
+        }
       });
 
     } catch (error) {
@@ -107,23 +119,27 @@ export default function ServiceWorkerRegistration({ children }: ServiceWorkerReg
   };
 
   const dispatchUpdateAvailable = (registration: ServiceWorkerRegistration) => {
-    const event = new CustomEvent('sw-update-available', {
-      detail: { registration }
-    });
-    window.dispatchEvent(event);
+    if (typeof window !== 'undefined') {
+      const event = new CustomEvent('sw-update-available', {
+        detail: { registration }
+      });
+      window.dispatchEvent(event);
+    }
   };
 
   const handleUpdate = async () => {
     setIsInstalling(true);
     
     try {
-      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      if (typeof window !== 'undefined' && 'serviceWorker' in navigator && navigator.serviceWorker.controller) {
         // Send message to service worker to skip waiting
         navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
         
         // Reload the page after a short delay
         setTimeout(() => {
-          window.location.reload();
+          if (typeof window !== 'undefined') {
+            window.location.reload();
+          }
         }, 1000);
       }
     } catch (error) {
@@ -164,6 +180,8 @@ export default function ServiceWorkerRegistration({ children }: ServiceWorkerReg
   };
 
   const handleCacheUrls = async (urls: string[]) => {
+    if (typeof window === 'undefined') return;
+    
     if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
       try {
         const messageChannel = new MessageChannel();
@@ -190,6 +208,9 @@ export default function ServiceWorkerRegistration({ children }: ServiceWorkerReg
 
   // Pre-cache important URLs
   useEffect(() => {
+    // Only run on client side
+    if (typeof window === 'undefined') return;
+
     // Only cache if service worker is ready
     if ('serviceWorker' in navigator) {
       const importantUrls = [

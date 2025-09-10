@@ -110,3 +110,62 @@ export interface CreatePondRequest {
   shrimp_count?: number
   external_id?: string
 }
+
+// Batch sensor data types
+export interface BatchSensorData {
+  pondId: string
+  timestamp: string
+  DO?: number
+  PH?: number
+  Temp?: number
+  Size?: number
+  Mineral?: number
+  SizePic?: string
+  PicFood?: string
+  PicColorWater?: string
+}
+
+export interface SensorValue {
+  value: number | string
+  type: 'numeric' | 'url' | 'string'
+  status: 'green' | 'yellow' | 'red' | 'info'
+  timestamp?: string
+}
+
+export interface BatchSensorResponse {
+  success: boolean
+  message: string
+  data: {
+    batchId: string
+    pondId: string
+    timestamp: string
+    sensors: Record<string, SensorValue>
+  }
+}
+
+export interface LatestSensorData {
+  success: boolean
+  data: Record<string, SensorValue>
+  pondId: number
+  source: 'batch' | 'individual'
+  timestamp: string
+}
+
+export interface SensorBatch {
+  id: string
+  pond_id: number
+  timestamp: string
+  sensors: Record<string, SensorValue>
+  created_at: string
+  source: string
+}
+
+export interface BatchHistoryResponse {
+  success: boolean
+  data: {
+    pondId: number
+    batches: SensorBatch[]
+    count: number
+  }
+  timestamp: string
+}

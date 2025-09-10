@@ -1,11 +1,11 @@
 // Auto-detect API URL based on environment
 const getApiBaseUrl = () => {
   if (typeof window !== 'undefined') {
-    // Client-side: always use 127.0.0.1 for local development
-    return 'http://127.0.0.1:8000'
+    // Client-side: use 192.168.1.145 for local development (same as frontend)
+    return 'http://192.168.1.145:8000'
   }
-  // Server-side: use 127.0.0.1
-  return 'http://127.0.0.1:8000'
+  // Server-side: use 192.168.1.145
+  return 'http://192.168.1.145:8000'
 }
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || getApiBaseUrl()
@@ -354,6 +354,46 @@ class ApiClient {
       headers: {
         'Authorization': `Bearer ${token}`,
       },
+    })
+  }
+
+  // Latest sensor data (optimized batch storage)
+  async getLatestSensorData(pondId: string, token?: string): Promise<ApiResponse<any>> {
+    console.log('🔍 Get latest sensor data request:', pondId)
+    const headers: Record<string, string> = {}
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+    
+    return this.request<any>(`/api/v1/sensors/latest/${pondId}`, {
+      method: 'GET',
+      headers,
+    })
+  }
+
+  // Sensor batch history
+  async getSensorBatchHistory(pondId: string, limit?: number): Promise<ApiResponse<any>> {
+    console.log('🔍 Get sensor batch history request:', pondId, 'limit:', limit)
+    const queryParams = new URLSearchParams()
+    if (limit) queryParams.append('limit', limit.toString())
+    
+    const queryString = queryParams.toString()
+    const url = `/api/v1/sensors/batches/${pondId}${queryString ? `?${queryString}` : ''}`
+    
+    return this.request<any>(url, {
+      method: 'GET',
+    })
+  }
+
+  // Send batch sensor data
+  async sendBatchSensorData(data: any): Promise<ApiResponse<any>> {
+    console.log('🔍 Send batch sensor data request:', data)
+    return this.request<any>('/api/v1/sensors/batch-sensor-data', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
     })
   }
 

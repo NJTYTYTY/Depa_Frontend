@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { apiClient } from '@/lib/api-client'
-import type { SensorReading, TimeRange } from '@/lib/types'
+import type { SensorReading, TimeRange, LatestSensorData, BatchHistoryResponse } from '@/lib/types'
 import { useAuth } from '@/providers/auth-provider'
 
 interface ReadingsResponse {
@@ -64,5 +64,53 @@ export function useCurrentReadings(pondId: string) {
       return response.data || []
     },
     enabled: !!pondId && !!accessToken,
+  })
+}
+
+// New hooks for batch sensor data
+export function useLatestSensorData(pondId: string) {
+  const { accessToken } = useAuth()
+  
+  console.log('🔧 useLatestSensorData called with pondId:', pondId, 'accessToken:', !!accessToken)
+  
+  return useQuery({
+    queryKey: ['latest-sensor-data', pondId], // Remove Date.now() to prevent constant refetch
+    queryFn: async (): Promise<LatestSensorData> => {
+      console.log('🚀 Fetching latest sensor data for pond:', pondId)
+      const response = await apiClient.getLatestSensorData(pondId, accessToken || undefined)
+      
+      console.log('📡 API response:', response)
+      
+      if (response.error) {
+        console.error('❌ API error:', response.error)
+        throw new Error(response.error)
+      }
+      
+      console.log('✅ API success, data:', response.data)
+      return response.data as LatestSensorData
+    },
+    enabled: !!pondId && !!accessToken,
+    // Fetch only when page loads - no automatic refetching
+    staleTime: 0, // Always consider data stale to force refetch on mount
+    gcTime: 0, // Don't cache data
+    refetchOnMount: true, // Always refetch on mount
+    refetchOnWindowFocus: false, // Don't refetch on window focus
+    refetchInterval: false, // Disable automatic refetching
+  })
+}
+
+export function useSensorBatchHistory(pondId: string, limit?: number) {
+  return useQuery({
+    queryKey: ['sensor-batch-history', pondId, limit],
+    queryFn: async (): Promise<BatchHistoryResponse> => {
+      const response = await apiClient.getSensorBatchHistory(pondId, limit)
+      
+      if (response.error) {
+        throw new Error(response.error)
+      }
+      
+      return response.data as BatchHistoryResponse
+    },
+    enabled: !!pondId,
   })
 }

@@ -57,6 +57,9 @@ export function usePonds() {
     enabled: !!accessToken,
     retry: 3,
     retryDelay: 1000,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
+    refetchOnWindowFocus: false, // Don't refetch on window focus
   })
 }
 

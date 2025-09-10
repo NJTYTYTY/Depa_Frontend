@@ -31,7 +31,8 @@ export function useLogout() {
   return useMutation({
     mutationFn: async (): Promise<void> => {
       // Logout is handled by the auth provider
-      logout()
+      // ใช้ Promise.resolve() เพื่อให้เป็น async
+      return Promise.resolve(logout())
     },
     onSuccess: () => {
       router.push('/login')

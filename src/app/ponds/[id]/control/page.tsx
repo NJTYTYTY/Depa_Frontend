@@ -7,6 +7,8 @@ export default function ControlPage() {
   const router = useRouter()
   const params = useParams()
   const pondId = params.id
+  const [isLifting, setIsLifting] = useState(false)
+  const [isLiftUp, setIsLiftUp] = useState(false) // สถานะของยอ (ขึ้น/ลง)
 
   const goBack = () => router.back()
 
@@ -15,6 +17,61 @@ export default function ControlPage() {
     const isActive = element.classList.contains('active')
     console.log('Switch toggled:', isActive)
   }
+
+// ฟังก์ชันสำหรับควบคุมยอ (ขึ้น/ลง) - ส่ง POST ไปยัง backend_middle
+const handleLiftToggle = async () => {
+  if (isLifting) return // ป้องกันการกดซ้ำ
+  
+  setIsLifting(true)
+  
+  try {
+    const backendMiddleUrl = process.env.NEXT_PUBLIC_BACKEND_MIDDLE_URL || 'http://localhost:3002/api'
+    
+    // แปลง pondId เป็น string และตรวจสอบ
+    const pondIdString = Array.isArray(pondId) ? pondId[0] : pondId
+    
+    // กำหนด action และ endpoint ตามสถานะปัจจุบัน
+    const action = isLiftUp ? 'lift_down' : 'lift_up'
+    const endpoint = isLiftUp ? 'lift-down' : 'lift-up'
+    
+    // สร้าง request body
+    const requestBody = {
+      pondId: pondIdString,
+      action: action,
+      timestamp: new Date().toISOString()
+    }
+    
+    console.log(`🚀 Sending ${action} command:`, requestBody)
+    
+    const response = await fetch(`${backendMiddleUrl}/${endpoint}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody)
+    })
+
+    if (response.ok) {
+      const result = await response.json()
+      console.log(`✅ ${action} command sent successfully:`, result)
+      
+      // อัปเดตสถานะหลังจากส่งคำสั่งสำเร็จ
+      setIsLiftUp(!isLiftUp)
+      
+      const message = isLiftUp ? 'คำสั่งยกยอลงส่งสำเร็จ!' : 'คำสั่งยกยอขึ้นส่งสำเร็จ!'
+      alert(message)
+    } else {
+      const errorData = await response.json().catch(() => ({}))
+      console.error(`❌ Failed to send ${action} command:`, response.status, errorData)
+      alert('เกิดข้อผิดพลาดในการส่งคำสั่ง กรุณาลองใหม่อีกครั้ง')
+    }
+  } catch (error) {
+    console.error('💥 Error calling backend_middle:', error)
+    alert('ไม่สามารถเชื่อมต่อกับระบบควบคุมได้ กรุณาตรวจสอบการเชื่อมต่อ')
+  } finally {
+    setIsLifting(false)
+  }
+}
 
   return (
     <div className="w-full flex flex-col h-full bg-[#fcfaf7]">
@@ -83,12 +140,32 @@ export default function ControlPage() {
                   </svg>
                 </div>
                 <div className="control-info">
-                  <h3>2. ยกยอขึ้น</h3>
-                  <p>กดเพื่อยกยอทันที</p>
+                  <h3>2. ยกยอขึ้น/ลง</h3>
+                  <p>
+                    {isLifting 
+                      ? 'กำลังส่งคำสั่ง...' 
+                      : isLiftUp 
+                        ? 'กดเพื่อยกยอลง' 
+                        : 'กดเพื่อยกยอขึ้น'
+                    }
+                  </p>
                 </div>
               </div>
-              <div className="toggle-switch" onClick={(e) => toggleSwitch(e.currentTarget)}>
-                <div className="toggle-slider"></div>
+              <div 
+                className={`toggle-switch ${isLiftUp ? 'active' : ''} ${isLifting ? 'loading' : ''}`} 
+                onClick={handleLiftToggle}
+                style={{ 
+                  cursor: isLifting ? 'not-allowed' : 'pointer',
+                  opacity: isLifting ? 0.7 : 1 
+                }}
+              >
+                <div className="toggle-slider">
+                  {isLifting && (
+                    <div className="loading-spinner">
+                      <div className="spinner"></div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -380,6 +457,31 @@ export default function ControlPage() {
           transform: translateX(28px);
         }
 
+        .toggle-switch.loading .toggle-slider {
+          background-color: #f2c245;
+        }
+
+        .loading-spinner {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+        }
+
+        .spinner {
+          width: 12px;
+          height: 12px;
+          border: 2px solid #ffffff;
+          border-top: 2px solid transparent;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+
         /* Sensor Status Section */
         .sensor-status-section {
           background-color: #ffffff;
@@ -482,3 +584,4 @@ export default function ControlPage() {
     </div>
   )
 }
+

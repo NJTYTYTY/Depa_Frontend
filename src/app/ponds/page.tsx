@@ -2,14 +2,20 @@
 
 import { useRouter } from 'next/navigation'
 import { usePonds, useDeletePond } from '@/hooks/use-ponds'
+import { useLogout } from '@/hooks/use-auth'
 
 export default function ShrimpPondsPage() {
   const router = useRouter()
   const { data: ponds, isLoading, error } = usePonds()
   const deletePondMutation = useDeletePond()
+  const logoutMutation = useLogout()
 
   const addPond = () => {
     router.push('/ponds/add')
+  }
+
+  const handleLogout = () => {
+    logoutMutation.mutate()
   }
 
   const selectPond = (pondId: string) => {
@@ -61,6 +67,9 @@ export default function ShrimpPondsPage() {
         {/* Header */}
         <div className="header">
           <div className="header-content">
+            <div className="logout-button" onClick={handleLogout}>
+              <span className="logout-text">Logout</span>
+            </div>
             <div className="spacer"></div>
             <div className="add-button" onClick={addPond}>
               <div className="add-icon">
@@ -184,6 +193,29 @@ export default function ShrimpPondsPage() {
 
         .spacer {
           flex: 1;
+        }
+
+        .logout-button {
+          padding: 8px 16px;
+          height: 40px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          background-color: #dc2626;
+          border-radius: 12px;
+          transition: background-color 0.2s;
+        }
+
+        .logout-button:hover {
+          background-color: #b91c1c;
+        }
+
+        .logout-text {
+          color: white;
+          font-size: 14px;
+          font-weight: 600;
+          font-family: 'Inter', 'Noto Sans Thai', sans-serif;
         }
 
         .add-button {

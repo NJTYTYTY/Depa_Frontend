@@ -230,7 +230,7 @@ export default function AgentPage() {
           </div>
           <div className="header-title">
             <h1 className="font-bold text-lg leading-6 text-[#1c170d] text-center m-0">
-              สวัสดี! ฉันคือผู้ช่วย AI
+              สวัสดี! เราคือผู้ช่วย AI
             </h1>
           </div>
         </div>
@@ -557,6 +557,8 @@ export default function AgentPage() {
           border-radius: 20px;
           padding: 12px 16px;
           font-size: 14px;
+          color: #1c170d;
+          background: white;
           resize: none;
           outline: none;
           transition: border-color 0.2s;
