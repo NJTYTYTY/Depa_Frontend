@@ -21,15 +21,15 @@ export default function PondDetailPage() {
   const [sensorData, setSensorData] = useState<{
     [key: string]: { value: any; status: string; timestamp: string | null; imageUrl?: string }
   }>({
-    DO: { value: 6.5, status: 'green', timestamp: null },
-    pH: { value: 8.2, status: 'green', timestamp: null },
-    temperature: { value: 29.5, status: 'green', timestamp: null },
-    shrimpSize: { value: 5, status: 'green', timestamp: null },
+    DO: { value: 0.0, status: 'green', timestamp: null },
+    pH: { value: 0.0, status: 'green', timestamp: null },
+    temperature: { value: 0.0, status: 'green', timestamp: null },
+    shrimpSize: { value: 0.0, status: 'green', timestamp: null },
     waterColor: { value: 'สีเขียว', status: 'green', timestamp: null },
-    minerals: { value: 0.5, status: 'red', timestamp: null }
+    minerals: { value: 0.0, status: 'red', timestamp: null }
   })
 
-  const goBack = () => router.back()
+  const goBack = () => router.push('/ponds')
 
   const viewImage = (type: string) => {
     // Get the image URL from sensor data

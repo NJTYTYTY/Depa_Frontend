@@ -1,11 +1,11 @@
 // Auto-detect API URL based on environment
 const getApiBaseUrl = () => {
   if (typeof window !== 'undefined') {
-    // Client-side: use 192.168.1.145 for local development (same as frontend)
-    return 'http://192.168.1.145:8000'
+    // Client-side: use localhost for local development
+    return 'http://localhost:8000'
   }
-  // Server-side: use 192.168.1.145
-  return 'http://192.168.1.145:8000'
+  // Server-side: use localhost
+  return 'http://localhost:8000'
 }
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || getApiBaseUrl()

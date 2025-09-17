@@ -1,19 +1,133 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+
+interface LogFile {
+  id: string
+  name: string
+  date: string
+  size: string
+  createdAt: string
+  filepath?: string
+}
 
 export default function HistoryPage() {
   const router = useRouter()
   const params = useParams()
   const pondId = params.id
+  const [logFiles, setLogFiles] = useState<LogFile[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [isAdding, setIsAdding] = useState(false)
 
-  const goBack = () => router.back()
+  const goBack = () => router.push('/ponds')
 
-  const downloadFile = () => {
-    alert('กำลังดาวน์โหลดไฟล์ log...')
-    // Here you would typically trigger a file download
+  // Fetch log files from backend
+  const fetchLogFiles = async () => {
+    try {
+      setIsLoading(true)
+      const response = await fetch(`/api/logs/${pondId}`)
+      if (response.ok) {
+        const data = await response.json()
+        setLogFiles(data.logFiles || [])
+      } else {
+        console.error('Failed to fetch log files:', response.status)
+      }
+    } catch (error) {
+      console.error('Error fetching log files:', error)
+    } finally {
+      setIsLoading(false)
+    }
   }
+
+  // Add new log file
+  const addLogFile = async () => {
+    try {
+      setIsAdding(true)
+      const response = await fetch('/api/logs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pondId })
+      })
+      
+      if (response.ok) {
+        await fetchLogFiles() // Refresh the list
+        alert('เพิ่มไฟล์ log เรียบร้อยแล้ว')
+      } else {
+        alert('เกิดข้อผิดพลาดในการเพิ่มไฟล์ log')
+      }
+    } catch (error) {
+      console.error('Error adding log file:', error)
+      alert('เกิดข้อผิดพลาดในการเพิ่มไฟล์ log')
+    } finally {
+      setIsAdding(false)
+    }
+  }
+
+  // Delete log file
+  const deleteLogFile = async (logId: string) => {
+    if (!confirm('คุณแน่ใจหรือไม่ที่จะลบไฟล์ log นี้?')) return
+    
+    try {
+      const response = await fetch(`/api/logs/delete/${logId}`, {
+        method: 'DELETE'
+      })
+      
+      if (response.ok) {
+        await fetchLogFiles() // Refresh the list
+        alert('ลบไฟล์ log เรียบร้อยแล้ว')
+      } else {
+        const errorData = await response.json()
+        console.error('Delete error:', errorData)
+        alert('เกิดข้อผิดพลาดในการลบไฟล์ log')
+      }
+    } catch (error) {
+      console.error('Error deleting log file:', error)
+      alert('เกิดข้อผิดพลาดในการลบไฟล์ log')
+    }
+  }
+
+  // Download log file
+  const downloadFile = async (logId: string, fileName: string) => {
+    try {
+      const response = await fetch(`/api/logs/download/${logId}`)
+      if (response.ok) {
+        const blob = await response.blob()
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = fileName
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(url)
+        document.body.removeChild(a)
+      } else {
+        alert('เกิดข้อผิดพลาดในการดาวน์โหลดไฟล์')
+      }
+    } catch (error) {
+      console.error('Error downloading file:', error)
+      alert('เกิดข้อผิดพลาดในการดาวน์โหลดไฟล์')
+    }
+  }
+
+  useEffect(() => {
+    fetchLogFiles()
+    
+    // Remove Glasp extension elements
+    const removeGlaspExtension = () => {
+      const glaspElements = document.querySelectorAll('[class*="glasp"], .glasp-extension-toaster')
+      glaspElements.forEach(element => {
+        element.remove()
+      })
+    }
+    
+    // Remove immediately and set interval to catch new ones
+    removeGlaspExtension()
+    const interval = setInterval(removeGlaspExtension, 1000)
+    
+    return () => clearInterval(interval)
+  }, [pondId])
+
 
   return (
     <div className="w-full flex flex-col h-full bg-[#fcfaf7]">
@@ -42,81 +156,90 @@ export default function HistoryPage() {
 
           {/* File Section */}
           <div className="file-section">
-            <div className="file-item">
-              <div className="file-info">
-                <h3>Log File - 2024-01-15</h3>
-                <div className="file-date">2024-01-15 10:30 AM</div>
-                <div className="file-size">2.5 MB</div>
+            {isLoading ? (
+              <div className="loading-state">
+                <p>กำลังโหลดไฟล์ log...</p>
               </div>
-              <div className="file-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                  <g clipPath="url(#clip0_4_619)">
-                    <path fillRule="evenodd" clipRule="evenodd" d="M20.0306 7.71938L14.7806 2.46937C14.6399 2.32876 14.449 2.24984 14.25 2.25H5.25C4.42157 2.25 3.75 2.92157 3.75 3.75V20.25C3.75 21.0784 4.42157 21.75 5.25 21.75H18.75C19.5784 21.75 20.25 21.0784 20.25 20.25V8.25C20.2502 8.05103 20.1712 7.86015 20.0306 7.71938V7.71938ZM15 4.81031L17.6897 7.5H15V4.81031ZM18.75 20.25H5.25V3.75H13.5V8.25C13.5 8.66421 13.8358 9 14.25 9H18.75V20.25V20.25Z" fill="#171412"/>
-                  </g>
-                  <defs>
-                    <clipPath id="clip0_4_619">
-                      <rect width="24" height="24" fill="white"/>
-                    </clipPath>
-                  </defs>
-                </svg>
-              </div>
+            ) : logFiles.length === 0 ? (
+              <div className="empty-state">
+                <p>ไม่มีไฟล์ log ในขณะนี้</p>
+                <p>logFiles count: {logFiles.length}</p>
+                <button 
+                  className="add-button" 
+                  onClick={addLogFile}
+                  disabled={isAdding}
+                  style={{marginTop: '16px'}}
+                >
+                  {isAdding ? 'กำลังเพิ่ม...' : 'เพิ่มไฟล์ Log ใหม่'}
+                </button>
             </div>
-
-            <div className="file-item">
-              <div className="file-info">
-                <h3>Log File - 2024-01-14</h3>
-                <div className="file-date">2024-01-14 09:15 AM</div>
-                <div className="file-size">2.3 MB</div>
-              </div>
-              <div className="file-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                  <g clipPath="url(#clip0_4_619)">
-                    <path fillRule="evenodd" clipRule="evenodd" d="M20.0306 7.71938L14.7806 2.46937C14.6399 2.32876 14.449 2.24984 14.25 2.25H5.25C4.42157 2.25 3.75 2.92157 3.75 3.75V20.25C3.75 21.0784 4.42157 21.75 5.25 21.75H18.75C19.5784 21.75 20.25 21.0784 20.25 20.25V8.25C20.2502 8.05103 20.1712 7.86015 20.0306 7.71938V7.71938ZM15 4.81031L17.6897 7.5H15V4.81031ZM18.75 20.25H5.25V3.75H13.5V8.25C13.5 8.66421 13.8358 9 14.25 9H18.75V20.25V20.25Z" fill="#171412"/>
-                  </g>
-                  <defs>
-                    <clipPath id="clip0_4_619">
-                      <rect width="24" height="24" fill="white"/>
-                    </clipPath>
-                  </defs>
-                </svg>
-              </div>
-            </div>
-
-            <div className="file-item">
-              <div className="file-info">
-                <h3>Log File - 2024-01-13</h3>
-                <div className="file-date">2024-01-13 08:45 AM</div>
-                <div className="file-size">2.1 MB</div>
-              </div>
-              <div className="file-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                  <g clipPath="url(#clip0_4_619)">
-                    <path fillRule="evenodd" clipRule="evenodd" d="M20.0306 7.71938L14.7806 2.46937C14.6399 2.32876 14.449 2.24984 14.25 2.25H5.25C4.42157 2.25 3.75 2.92157 3.75 3.75V20.25C3.75 21.0784 4.42157 21.75 5.25 21.75H18.75C19.5784 21.75 20.25 21.0784 20.25 20.25V8.25C20.2502 8.05103 20.1712 7.86015 20.0306 7.71938V7.71938ZM15 4.81031L17.6897 7.5H15V4.81031ZM18.75 20.25H5.25V3.75H13.5V8.25C13.5 8.66421 13.8358 9 14.25 9H18.75V20.25V20.25Z" fill="#171412"/>
-                  </g>
-                  <defs>
-                    <clipPath id="clip0_4_619">
-                      <rect width="24" height="24" fill="white"/>
-                    </clipPath>
-                  </defs>
-                </svg>
-              </div>
-            </div>
+            ) : (
+              logFiles.map((logFile) => (
+                <div key={logFile.id} className="file-item">
+                  <div className="file-info">
+                    <h3>{logFile.name}</h3>
+                    <div className="file-date">{logFile.date}</div>
+                    <div className="file-size">{logFile.size}</div>
+                  </div>
+                  <div className="file-actions">
+                    <button 
+                      className="action-button download-btn"
+                      onClick={() => downloadFile(logFile.id, logFile.name)}
+                      title="ดาวน์โหลด"
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 15.75L8.25 12L9.66 10.59L11.25 12.18V3H12.75V12.18L14.34 10.59L15.75 12L12 15.75Z" fill="currentColor"/>
+                        <path d="M20.25 15.75V19.5C20.25 20.33 19.58 21 18.75 21H5.25C4.42 21 3.75 20.33 3.75 19.5V15.75H5.25V19.5H18.75V15.75H20.25Z" fill="currentColor"/>
+                      </svg>
+                    </button>
+                    <button 
+                      className="action-button delete-btn"
+                      onClick={() => deleteLogFile(logFile.id)}
+                      title="ลบ"
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path d="M6 19C6 20.1 6.9 21 8 21H16C17.1 21 18 20.1 18 19V7H6V19ZM8 9H16V19H8V9ZM15.5 4L14.5 3H9.5L8.5 4H5V6H19V4H15.5Z" fill="currentColor"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
 
-          {/* Download Button Section */}
-          <div className="download-section">
-            <button className="download-button" onClick={downloadFile}>
-              Download Log File
+          {/* Action Buttons Section */}
+          <div className="action-section">
+            <button 
+              className="add-button" 
+              onClick={addLogFile}
+              disabled={isAdding}
+            >
+              {isAdding ? 'กำลังเพิ่ม...' : 'เพิ่มไฟล์ Log ใหม่'}
             </button>
           </div>
         </div>
 
-      <style jsx>{`
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-        }
+       <style jsx>{`
+         * {
+           margin: 0;
+           padding: 0;
+           box-sizing: border-box;
+         }
+
+         /* Prevent Glasp extension from interfering */
+         .glasp-extension-toaster {
+           display: none !important;
+         }
+         
+         /* Hide all Glasp extension elements */
+         [class*="glasp"] {
+           display: none !important;
+         }
+         
+         /* Hide shadow DOM elements */
+         template[shadowrootmode] {
+           display: none !important;
+         }
 
         body {
           font-family: 'Inter', 'Space Grotesk', 'Noto Sans Thai', sans-serif;
@@ -228,6 +351,12 @@ export default function HistoryPage() {
           align-items: center;
           justify-content: space-between;
           gap: 16px;
+          padding: 16px 0;
+          border-bottom: 1px solid #f3f4f6;
+        }
+
+        .file-item:last-child {
+          border-bottom: none;
         }
 
         .file-info {
@@ -258,23 +387,78 @@ export default function HistoryPage() {
           color: #9ca3af;
         }
 
-        .file-icon {
-          width: 48px;
-          height: 48px;
+         .file-actions {
+           display: flex;
+           gap: 8px;
+           align-items: center;
+           position: relative;
+           z-index: 1000;
+         }
+
+         .action-button {
+           width: 40px;
+           height: 40px;
+           border: none;
+           border-radius: 8px;
+           cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
-          background-color: #f9fafb;
-          border-radius: 12px;
-          flex-shrink: 0;
+           transition: all 0.2s ease;
+           user-select: none;
+           -webkit-user-select: none;
+           -moz-user-select: none;
+           -ms-user-select: none;
+           position: relative;
+           z-index: 10;
+         }
+
+
+        .download-btn {
+          background-color: #10b981;
+          color: white;
         }
 
-        /* Download Section */
-        .download-section {
+        .download-btn:hover {
+          background-color: #059669;
+          transform: scale(1.05);
+        }
+
+        .download-btn:active {
+          transform: scale(0.95);
+        }
+
+        .delete-btn {
+          background-color: #ef4444;
+          color: white;
+        }
+
+        .delete-btn:hover {
+          background-color: #dc2626;
+          transform: scale(1.05);
+        }
+
+        .delete-btn:active {
+          transform: scale(0.95);
+        }
+
+        .loading-state, .empty-state {
+          text-align: center;
+          padding: 40px 20px;
+          color: #6b7280;
+        }
+
+        .loading-state p, .empty-state p {
+          margin: 0;
+          font-size: 16px;
+        }
+
+        /* Action Section */
+        .action-section {
           text-align: center;
         }
 
-        .download-button {
+        .add-button {
           background-color: #f2c245;
           border: none;
           border-radius: 20px;
@@ -289,8 +473,13 @@ export default function HistoryPage() {
           min-width: 200px;
         }
 
-        .download-button:hover {
+        .add-button:hover:not(:disabled) {
           background-color: #e6b63d;
+        }
+
+        .add-button:disabled {
+          background-color: #d1d5db;
+          cursor: not-allowed;
         }
 
         /* Responsive Design */

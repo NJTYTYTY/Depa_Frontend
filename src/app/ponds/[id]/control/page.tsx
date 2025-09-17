@@ -10,7 +10,7 @@ export default function ControlPage() {
   const [isLifting, setIsLifting] = useState(false)
   const [isLiftUp, setIsLiftUp] = useState(false) // สถานะของยอ (ขึ้น/ลง)
 
-  const goBack = () => router.back()
+  const goBack = () => router.push('/ponds')
 
   const toggleSwitch = (element: HTMLElement) => {
     element.classList.toggle('active')

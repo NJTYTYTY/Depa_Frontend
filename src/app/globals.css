@@ -32,6 +32,55 @@ body {
   }
 }
 
+/* Graph Card Styles */
+.graph-card {
+  @apply bg-white rounded-2xl p-6 border-2 border-gray-200 shadow-lg;
+}
+
+.graph-card.green {
+  @apply border-green-500;
+}
+
+.graph-card.yellow {
+  @apply border-yellow-500;
+}
+
+.graph-card.red {
+  @apply border-red-500;
+}
+
+.graph-card .card-header h3 {
+  @apply font-semibold text-lg text-gray-800 mb-2 m-0;
+}
+
+.graph-card .sensor-value {
+  @apply font-bold text-2xl text-gray-800 mb-2;
+}
+
+.graph-card .sensor-info {
+  @apply flex justify-between items-center text-sm text-gray-500;
+}
+
+.graph-card .change.positive {
+  @apply text-green-500 font-medium;
+}
+
+.graph-card .change.negative {
+  @apply text-red-500 font-medium;
+}
+
+.graph-card .chart-container {
+  @apply relative;
+}
+
+.graph-card .chart {
+  @apply w-full h-auto max-w-[306px] mx-auto block;
+}
+
+.graph-card .time-labels {
+  @apply flex justify-between mt-3 text-xs text-gray-500;
+}
+
 /* PWA Standalone Mode Styles - Native App Experience */
 @media (display-mode: standalone) {
   html, body {

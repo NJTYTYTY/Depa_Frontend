@@ -50,6 +50,33 @@ export interface MediaAsset {
   meta: Record<string, any>
 }
 
+// Graph data types
+export interface GraphDataPoint {
+  timestamp: string
+  value: number
+  status?: string
+}
+
+export interface GraphDataResponse {
+  sensor_type: string
+  data_points: GraphDataPoint[]
+  unit?: string
+  min_value?: number
+  max_value?: number
+  average_value?: number
+  trend?: string
+}
+
+export interface MultiSensorGraphResponse {
+  pond_id: number
+  sensors: Record<string, GraphDataResponse>
+  time_range: {
+    start_time: string
+    end_time: string
+  }
+  total_points: number
+}
+
 export interface Insight {
   id: string
   pond_id: string

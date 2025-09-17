@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { usePonds } from '@/hooks/use-ponds'
 
 interface Message {
@@ -12,6 +12,7 @@ interface Message {
 }
 
 export default function AgentPage() {
+  const router = useRouter()
   const params = useParams()
   const pondId = params.id as string
   const { data: ponds, isLoading: pondsLoading, error: pondsError } = usePonds()
@@ -160,7 +161,7 @@ export default function AgentPage() {
       <div className="agent-page">
         <div className="header-section">
           <div className="header-content">
-            <div className="back-button" onClick={() => window.history.back()}>
+            <div className="back-button" onClick={() => router.push('/ponds')}>
               <div className="back-icon">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <path fillRule="evenodd" clipRule="evenodd" d="M10.7194 3.28062C11.0124 3.57367 11.0124 4.04883 10.7194 4.34188L7.06031 8L10.7194 11.6581C11.0124 11.9512 11.0124 12.4263 10.7194 12.7194C10.4263 13.0124 9.95117 13.0124 9.65812 12.7194L5.65812 8.71938C5.36507 8.42633 5.36507 7.95117 5.65812 7.65812L9.65812 3.65812C9.95117 3.36507 10.4263 3.36507 10.7194 3.65812Z" fill="#1A170F"/>
@@ -191,7 +192,7 @@ export default function AgentPage() {
       <div className="agent-page">
         <div className="header-section">
           <div className="header-content">
-            <div className="back-button" onClick={() => window.history.back()}>
+            <div className="back-button" onClick={() => router.push('/ponds')}>
               <div className="back-icon">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <path fillRule="evenodd" clipRule="evenodd" d="M10.7194 3.28062C11.0124 3.57367 11.0124 4.04883 10.7194 4.34188L7.06031 8L10.7194 11.6581C11.0124 11.9512 11.0124 12.4263 10.7194 12.7194C10.4263 13.0124 9.95117 13.0124 9.65812 12.7194L5.65812 8.71938C5.36507 8.42633 5.36507 7.95117 5.65812 7.65812L9.65812 3.65812C9.95117 3.36507 10.4263 3.36507 10.7194 3.65812Z" fill="#1A170F"/>
@@ -221,7 +222,7 @@ export default function AgentPage() {
       {/* Header */}
       <div className="header-section">
         <div className="header-content">
-          <div className="back-button" onClick={() => window.history.back()}>
+          <div className="back-button" onClick={() => router.push('/ponds')}>
             <div className="back-icon">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <path fillRule="evenodd" clipRule="evenodd" d="M10.7194 3.28062C11.0124 3.57367 11.0124 4.04883 10.7194 4.34188L7.06031 8L10.7194 11.6581C11.0124 11.9512 11.0124 12.4263 10.7194 12.7194C10.4263 13.0124 9.95117 13.0124 9.65812 12.7194L5.65812 8.71938C5.36507 8.42633 5.36507 7.95117 5.65812 7.65812L9.65812 3.65812C9.95117 3.36507 10.4263 3.36507 10.7194 3.65812Z" fill="#1A170F"/>
