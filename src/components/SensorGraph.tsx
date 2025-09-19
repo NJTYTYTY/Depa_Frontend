@@ -16,15 +16,27 @@ const SensorGraph: React.FC<SensorGraphProps> = ({
   height = 200 
 }) => {
   // Transform data for recharts
-  const chartData = data.data_points.map(point => ({
-    time: new Date(point.timestamp).toLocaleTimeString('th-TH', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    }),
-    value: point.value,
-    fullTime: new Date(point.timestamp).toLocaleString('th-TH'),
-    status: point.status
-  }))
+  const chartData = data.data_points.map(point => {
+    const date = new Date(point.timestamp)
+    const isShrimpSize = data.sensor_type?.includes('Shrimp Size')
+    
+    return {
+      time: isShrimpSize 
+        ? date.toLocaleDateString('th-TH', { 
+            month: 'short', 
+            day: 'numeric' 
+          })
+        : date.toLocaleTimeString('th-TH', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+          }),
+      value: point.value,
+      fullTime: isShrimpSize 
+        ? date.toLocaleDateString('th-TH')
+        : date.toLocaleString('th-TH'),
+      status: point.status
+    }
+  })
 
   // Calculate trend indicator
   const getTrendIcon = (trend: string) => {
@@ -92,7 +104,7 @@ const SensorGraph: React.FC<SensorGraphProps> = ({
             {data.unit && <span className="text-sm font-normal text-gray-500 ml-1">{data.unit}</span>}
           </div>
           <div className="text-sm text-gray-500">
-            Last 24h
+            {data.sensor_type?.includes('Shrimp Size') ? 'Last 30D' : 'Last 24h'}
           </div>
         </div>
         
@@ -141,14 +153,6 @@ const SensorGraph: React.FC<SensorGraphProps> = ({
           </AreaChart>
         </ResponsiveContainer>
         
-        {/* Time labels */}
-        <div className="flex justify-between mt-3 text-xs text-gray-500">
-          <span>00:00</span>
-          <span>06:00</span>
-          <span>12:00</span>
-          <span>18:00</span>
-          <span>24:00</span>
-        </div>
       </div>
     </div>
   )

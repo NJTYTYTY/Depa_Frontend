@@ -25,7 +25,7 @@ const handleLiftToggle = async () => {
   setIsLifting(true)
   
   try {
-    const backendMiddleUrl = process.env.NEXT_PUBLIC_BACKEND_MIDDLE_URL || 'http://localhost:3002/api'
+    const backendMiddleUrl = process.env.RSPI_SERVER_YOKYOR || 'http://localhost:3002/api'
     
     // แปลง pondId เป็น string และตรวจสอบ
     const pondIdString = Array.isArray(pondId) ? pondId[0] : pondId

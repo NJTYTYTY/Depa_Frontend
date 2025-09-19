@@ -12,12 +12,64 @@ export default function GraphPage() {
 
   const goBack = () => router.push('/ponds')
 
-  // Fetch graph data
+  // Fetch graph data for regular sensors (24 hours)
   const { data: graphData, isLoading, error } = useGraphData({ 
     pondId,
     hours: 24,
     enabled: !!pondId
   })
+
+  // Hardcoded shrimp size data for 30 days
+  const generateShrimpSizeData = () => {
+    const data = []
+    const now = new Date()
+    let currentSize = 2.0 // Start at 2cm
+    
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date(now)
+      date.setDate(date.getDate() - i)
+      
+      // More realistic growth pattern
+      // Some days no growth, some days small growth, occasional setbacks
+      const growthChance = Math.random()
+      let growth = 0
+      
+      if (growthChance < 0.3) {
+        // 30% chance of no growth
+        growth = 0
+      } else if (growthChance < 0.8) {
+        // 50% chance of small growth (0.1-0.3cm)
+        growth = 0.1 + Math.random() * 0.2
+      } else if (growthChance < 0.95) {
+        // 15% chance of good growth (0.3-0.5cm)
+        growth = 0.3 + Math.random() * 0.2
+      } else {
+        // 5% chance of setback (-0.1 to 0cm)
+        growth = -0.1 + Math.random() * 0.1
+      }
+      
+      currentSize += growth
+      currentSize = Math.max(1.5, Math.min(8.5, currentSize)) // Keep within bounds
+      
+      data.push({
+        timestamp: date.toISOString(),
+        value: parseFloat(currentSize.toFixed(1)),
+        status: currentSize > 6 ? 'green' : currentSize > 4 ? 'yellow' : 'red'
+      })
+    }
+    
+    return {
+      sensor_type: 'Shrimp Size (CM)',
+      data_points: data,
+      min_value: Math.min(...data.map(d => d.value)),
+      max_value: Math.max(...data.map(d => d.value)),
+      average_value: data.reduce((sum, d) => sum + d.value, 0) / data.length,
+      trend: data[data.length - 1].value > data[0].value ? 'increasing' : 'decreasing',
+      unit: 'cm'
+    }
+  }
+
+  const shrimpSizeData = generateShrimpSizeData()
 
   // Define sensor colors
   const sensorColors = {
@@ -116,11 +168,11 @@ export default function GraphPage() {
           <p className="text-sm text-gray-600 mt-1">ข้อมูลแบบ Real-time (อัปเดตทุก 30 วินาที)</p>
         </div>
 
-        {/* Graph Cards */}
+        {/* Regular Sensor Cards (DO, pH, Temperature) - 24 hours */}
         <div className="flex flex-col gap-5">
           {graphData?.sensors ? (
             Object.entries(graphData.sensors)
-              .filter(([sensorType]) => sensorType !== 'minerals') // Filter out minerals
+              .filter(([sensorType]) => sensorType !== 'minerals' && sensorType !== 'shrimpSize') // Filter out minerals and shrimpSize
                .map(([sensorType, sensorData]) => {
                  // Get the specific color for this sensor type
                  const sensorColor = sensorColors[sensorType as keyof typeof sensorColors]
@@ -142,6 +194,15 @@ export default function GraphPage() {
               <p className="text-gray-500">ไม่มีข้อมูลเซนเซอร์</p>
             </div>
           )}
+        </div>
+
+        {/* Shrimp Size Card - 30 days */}
+        <div className="mt-6">
+          <SensorGraph
+            data={shrimpSizeData}
+            color="#8B5CF6"
+            height={200}
+          />
         </div>
       </div>
     </div>

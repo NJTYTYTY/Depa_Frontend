@@ -9,6 +9,8 @@ const getApiBaseUrl = () => {
 }
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || getApiBaseUrl()
+const BACKEND_MIDDLE_URL = process.env.NEXT_PUBLIC_BACKEND_MIDDLE_URL
+const RSPI_SERVER_YOKYOR = process.env.RSPI_SERVER_YOKYOR
 
 interface ApiResponse<T> {
   data: T
@@ -290,7 +292,9 @@ class ApiClient {
   async createPond(data: CreatePondRequest, token: string): Promise<ApiResponse<Pond>> {
     console.log('🔍 Create pond request:', data)
     console.log('🔍 Create pond token:', !!token)
-    return this.request<Pond>('/api/v1/ponds/', {
+    
+    // Send to main backend
+    const mainResponse = await this.request<Pond>('/api/v1/ponds/', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -298,6 +302,56 @@ class ApiClient {
       },
       body: JSON.stringify(data),
     })
+    
+    // Also send to RSPI server if configured
+    if (RSPI_SERVER_YOKYOR) {
+      try {
+        console.log('🔍 Sending to RSPI server:', RSPI_SERVER_YOKYOR)
+        const rspiResponse = await fetch(`${RSPI_SERVER_YOKYOR}/example_info_pond`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        })
+        
+        if (rspiResponse.ok) {
+          console.log('✅ Successfully sent to RSPI server')
+        } else {
+          console.warn('⚠️ RSPI server response not ok:', rspiResponse.status)
+        }
+      } catch (error) {
+        console.warn('⚠️ Failed to send to RSPI server:', error)
+        // Don't fail the main request if RSPI fails
+      }
+    }
+    
+    // Also send to backend middle if configured
+    if (BACKEND_MIDDLE_URL) {
+      try {
+        console.log('🔍 Sending to backend middle:', BACKEND_MIDDLE_URL)
+        const middleResponse = await fetch(`${BACKEND_MIDDLE_URL}/example_info_pond`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        })
+        
+        if (middleResponse.ok) {
+          console.log('✅ Successfully sent to backend middle')
+        } else {
+          console.warn('⚠️ Backend middle response not ok:', middleResponse.status)
+        }
+      } catch (error) {
+        console.warn('⚠️ Failed to send to backend middle:', error)
+        // Don't fail the main request if middle fails
+      }
+    }
+    
+    return mainResponse
   }
 
   async getPonds(token: string): Promise<ApiResponse<Pond[]>> {
