@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { usePonds } from '@/hooks/use-ponds'
 import { useLatestSensorData } from '@/hooks/use-readings'
+import { useBatchData } from '@/hooks/use-batch-data'
 import { useAuth } from '@/providers/auth-provider'
 import { apiClient } from '@/lib/api-client'
 
@@ -20,10 +21,8 @@ export default function PondDetailPage() {
   // Use the new batch sensor data hook
   const { data: latestData, isLoading: isLoadingLatest, error } = useLatestSensorData(pondId)
   
-  // State for batch data
-  const [batchData, setBatchData] = useState<any>(null)
-  const [isLoadingBatch, setIsLoadingBatch] = useState(false)
-  const [batchError, setBatchError] = useState<string | null>(null)
+  // Use batch data hook with 5-second refresh
+  const { data: batchData, isLoading: isLoadingBatch, error: batchError } = useBatchData(pondId)
 
   // State for sensor data with fallback
   const [sensorData, setSensorData] = useState<{
@@ -50,22 +49,6 @@ export default function PondDetailPage() {
   })
 
   const goBack = () => router.push('/ponds')
-
-  // Fetch batch data
-  const fetchBatchData = async () => {
-    try {
-      setIsLoadingBatch(true)
-      setBatchError(null)
-      
-      const response = await apiClient.getBatchData(pondId)
-      setBatchData(response)
-    } catch (error: any) {
-      console.error('❌ Error fetching batch data:', error)
-      setBatchError(error.message || 'Failed to fetch batch data')
-    } finally {
-      setIsLoadingBatch(false)
-    }
-  }
 
   const viewImage = (type: string) => {
     // Get the image URL from sensor data
@@ -99,12 +82,7 @@ export default function PondDetailPage() {
     }
   }
 
-  // Fetch batch data on component mount
-  useEffect(() => {
-    if (pondId) {
-      fetchBatchData()
-    }
-  }, [pondId])
+  // Batch data is now handled by useBatchData hook with 5-second refresh
 
   // Update sensor data when latestData or batchData changes
   useEffect(() => {
@@ -235,7 +213,7 @@ export default function PondDetailPage() {
                     newSensorData.shrimpVideo = { value: 'วิดีโอกุ้งดิ้น', status: 'info', timestamp: null }
                   }
                   newSensorData.shrimpVideo.imageUrl = data.value || data
-    } else {
+                } else {
                   // Store regular sensor data
                   const value = data.value !== undefined ? data.value : data
                   const status = data.status || 'green'
@@ -255,7 +233,7 @@ export default function PondDetailPage() {
     }
     
     setSensorData(newSensorData)
-  }, [latestData, batchData, isLoadingLatest, error])
+  }, [latestData, batchData, isLoadingLatest, error, batchError])
 
   // Function to get status color class
   const getStatusColor = (status: string) => {
@@ -320,7 +298,7 @@ export default function PondDetailPage() {
       <div className="w-full flex flex-col h-full bg-[#fcfaf7] items-center justify-center">
         <div className="text-lg text-red-600">เกิดข้อผิดพลาด:</div>
         {error && <div className="text-sm text-red-500 mt-1">เซ็นเซอร์: {error.message}</div>}
-        {batchError && <div className="text-sm text-red-500 mt-1">กุ้ง: {batchError}</div>}
+        {batchError && <div className="text-sm text-red-500 mt-1">กุ้ง: {batchError.message}</div>}
         <div className="text-sm text-gray-500 mt-2">กำลังใช้ข้อมูลสำรอง</div>
       </div>
     )

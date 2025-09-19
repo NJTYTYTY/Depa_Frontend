@@ -168,6 +168,42 @@ const handleLiftToggle = async () => {
                 </div>
               </div>
             </div>
+
+            {/* Control Item 3 */}
+            <div className="control-item">
+              <div className="control-content">
+                <div className="control-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="#1A170F"/>
+                  </svg>
+                </div>
+                <div className="control-info">
+                  <h3>3. ระบบแจ้งเตือน</h3>
+                  <p>เปิด/ปิดการแจ้งเตือนอัตโนมัติ</p>
+                </div>
+              </div>
+              <div className="toggle-switch active" onClick={(e) => toggleSwitch(e.currentTarget)}>
+                <div className="toggle-slider"></div>
+              </div>
+            </div>
+
+            {/* Control Item 4 */}
+            <div className="control-item">
+              <div className="control-content">
+                <div className="control-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="#1A170F"/>
+                  </svg>
+                </div>
+                <div className="control-info">
+                  <h3>4. ระบบบันทึกข้อมูล</h3>
+                  <p>เปิด/ปิดการบันทึกข้อมูลอัตโนมัติ</p>
+                </div>
+              </div>
+              <div className="toggle-switch active" onClick={(e) => toggleSwitch(e.currentTarget)}>
+                <div className="toggle-slider"></div>
+              </div>
+            </div>
           </div>
 
           {/* Sensor Status Section */}
@@ -203,7 +239,7 @@ const handleLiftToggle = async () => {
               {/* Row 2 */}
               <div className="sensor-row">
                 {/* Temperature Sensor */}
-                <div className="sensor-card red">
+                <div className="sensor-card green">
                   <div className="sensor-icon">
                     <svg width="18" height="24" viewBox="0 0 18 24" fill="none">
                       <path fillRule="evenodd" clipRule="evenodd" d="M14.875 5.25C13.4253 5.25 12.25 6.42525 12.25 7.875C12.25 9.32475 13.4253 10.5 14.875 10.5C16.3247 10.5 17.5 9.32475 17.5 7.875C17.5 6.42525 16.3247 5.25 14.875 5.25V5.25ZM14.875 9C14.2537 9 13.75 8.49632 13.75 7.875C13.75 7.25368 14.2537 6.75 14.875 6.75C15.4963 6.75 16 7.25368 16 7.875C16 8.49632 15.4963 9 14.875 9V9ZM7 14.3438V8.25C7 7.83579 6.66421 7.5 6.25 7.5C5.83579 7.5 5.5 7.83579 5.5 8.25V14.3438C4.03727 14.7214 3.08356 16.1278 3.27391 17.6265C3.46427 19.1252 4.7393 20.2485 6.25 20.2485C7.7607 20.2485 9.03573 19.1252 9.22609 17.6265C9.41644 16.1278 8.46273 14.7214 7 14.3438V14.3438ZM6.25 18.75C5.42157 18.75 4.75 18.0784 4.75 17.25C4.75 16.4216 5.42157 15.75 6.25 15.75C7.07843 15.75 7.75 16.4216 7.75 17.25C7.75 18.0784 7.07843 18.75 6.25 18.75V18.75ZM10 12.5625V4.5C10 2.42893 8.32107 0.75 6.25 0.75C4.17893 0.75 2.5 2.42893 2.5 4.5V12.5625C0.511202 14.1548 -0.255158 16.8295 0.588618 19.2334C1.43239 21.6373 3.7023 23.2462 6.25 23.2462C8.7977 23.2462 11.0676 21.6373 11.9114 19.2334C12.7552 16.8295 11.9888 14.1548 10 12.5625V12.5625ZM6.25 21.75C4.28349 21.7502 2.54464 20.4734 1.95598 18.597C1.36731 16.7207 2.0652 14.6795 3.67937 13.5562C3.8814 13.4152 4.00125 13.1839 4 12.9375V4.5C4 3.25736 5.00736 2.25 6.25 2.25C7.49264 2.25 8.5 3.25736 8.5 4.5V12.9375C8.49998 13.1826 8.61969 13.4122 8.82063 13.5525C10.4383 14.6746 11.1387 16.718 10.5496 18.5965C9.96052 20.475 8.21872 21.7525 6.25 21.75V21.75Z" fill="#0D1C0D"/>
@@ -213,7 +249,7 @@ const handleLiftToggle = async () => {
                 </div>
 
                 {/* Camera Sensor */}
-                <div className="sensor-card red">
+                <div className="sensor-card green">
                   <div className="sensor-icon">
                     <svg width="20" height="18" viewBox="0 0 20 18" fill="none">
                       <path fillRule="evenodd" clipRule="evenodd" d="M17.5 2.25H14.9013L13.6234 0.33375C13.4844 0.125363 13.2505 0.000150423 13 0H7C6.74949 0.000150423 6.51559 0.125363 6.37656 0.33375L5.09781 2.25H2.5C1.25736 2.25 0.25 3.25736 0.25 4.5V15C0.25 16.2426 1.25736 17.25 2.5 17.25H17.5C18.7426 17.25 19.75 16.2426 19.75 15V4.5C19.75 3.25736 18.7426 2.25 17.5 2.25V2.25ZM18.25 15C18.25 15.4142 17.9142 15.75 17.5 15.75H2.5C2.08579 15.75 1.75 15.4142 1.75 15V4.5C1.75 4.08579 2.08579 3.75 2.5 3.75H5.5C5.75084 3.75016 5.98516 3.62491 6.12438 3.41625L7.40125 1.5H12.5978L13.8756 3.41625C14.0148 3.62491 14.2492 3.75016 14.5 3.75H17.5C17.9142 3.75 18.25 4.08579 18.25 4.5V15ZM10 5.25C7.72183 5.25 5.875 7.09683 5.875 9.375C5.875 11.6532 7.72183 13.5 10 13.5C12.2782 13.5 14.125 11.6532 14.125 9.375C14.1224 7.0979 12.2771 5.25258 10 5.25V5.25ZM10 12C8.55025 12 7.375 10.8247 7.375 9.375C7.375 7.92525 8.55025 6.75 10 6.75C11.4497 6.75 12.625 7.92525 12.625 9.375C12.625 10.8247 11.4497 12 10 12V12Z" fill="#0D1C0D"/>
@@ -221,47 +257,6 @@ const handleLiftToggle = async () => {
                   </div>
                   <div className="sensor-label">Camera</div>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Additional Control Section */}
-          <div className="additional-controls-section">
-            <div className="section-title">
-              <h2>การตั้งค่าเพิ่มเติม</h2>
-            </div>
-
-            <div className="control-item">
-              <div className="control-content">
-                <div className="control-icon">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="#1A170F"/>
-                  </svg>
-                </div>
-                <div className="control-info">
-                  <h3>3. ระบบแจ้งเตือน</h3>
-                  <p>เปิด/ปิดการแจ้งเตือนอัตโนมัติ</p>
-                </div>
-              </div>
-              <div className="toggle-switch" onClick={(e) => toggleSwitch(e.currentTarget)}>
-                <div className="toggle-slider"></div>
-              </div>
-            </div>
-
-            <div className="control-item">
-              <div className="control-content">
-                <div className="control-icon">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="#1A170F"/>
-                  </svg>
-                </div>
-                <div className="control-info">
-                  <h3>4. ระบบบันทึกข้อมูล</h3>
-                  <p>เปิด/ปิดการบันทึกข้อมูลอัตโนมัติ</p>
-                </div>
-              </div>
-              <div className="toggle-switch" onClick={(e) => toggleSwitch(e.currentTarget)}>
-                <div className="toggle-slider"></div>
               </div>
             </div>
           </div>
@@ -382,7 +377,7 @@ const handleLiftToggle = async () => {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 20px 0;
+          padding: 12px 0;
           border-bottom: 1px solid #f3f4f6;
         }
 
@@ -489,16 +484,9 @@ const handleLiftToggle = async () => {
           padding: 24px;
           border: 1px solid #e5e7eb;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          margin-top: 16px;
         }
 
-        /* Additional Controls Section */
-        .additional-controls-section {
-          background-color: #ffffff;
-          border-radius: 16px;
-          padding: 24px;
-          border: 1px solid #e5e7eb;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
 
         .sensor-grid {
           display: flex;
@@ -558,8 +546,7 @@ const handleLiftToggle = async () => {
           }
           
           .equipment-section,
-          .sensor-status-section,
-          .additional-controls-section {
+          .sensor-status-section {
             padding: 20px;
           }
           
