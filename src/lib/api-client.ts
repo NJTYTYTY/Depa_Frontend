@@ -8,9 +8,26 @@ const getApiBaseUrl = () => {
   return 'http://localhost:8000'
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || getApiBaseUrl()
+// Get API URL with proper fallback
+const getApiUrl = () => {
+  // If NEXT_PUBLIC_API_URL is set, use it
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL
+  }
+  
+  // For production (Vercel), use the production backend URL
+  if (process.env.NODE_ENV === 'production') {
+    // ใช้ ngrok หรือ tunnel URL สำหรับ development
+    return 'https://your-ngrok-url.ngrok.io' // เปลี่ยนเป็น ngrok URL หรือ backend URL จริง
+  }
+  
+  // For development, use localhost
+  return getApiBaseUrl()
+}
+
+const API_BASE_URL = getApiUrl()
 const BACKEND_MIDDLE_URL = process.env.NEXT_PUBLIC_BACKEND_MIDDLE_URL
-const RSPI_SERVER_YOKYOR = process.env.RSPI_SERVER_YOKYOR
+const RSPI_SERVER_YOKYOR = process.env.NEXT_PUBLIC_RSPI_SERVER_YOKYOR
 
 interface ApiResponse<T> {
   data: T
