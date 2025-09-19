@@ -11,7 +11,6 @@ export default function Home() {
     setIsMounted(true)
     
     // Simple redirect logic - always redirect to login first
-    console.log('🔄 Redirecting to login page...')
     router.push('/login')
   }, [router])
 

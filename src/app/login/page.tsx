@@ -39,7 +39,6 @@ export default function LoginPage() {
       })
     } catch (error) {
       setError('เกิดข้อผิดพลาดในการเข้าสู่ระบบ')
-      console.error('Login error:', error)
     }
   }
 

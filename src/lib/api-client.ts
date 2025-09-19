@@ -197,7 +197,6 @@ class ApiClient {
           errorMessage = errorData.error
         }
 
-        console.error(`❌ API Error: ${errorMessage}`)
         return {
           data: null as T,
           error: errorMessage,
@@ -208,7 +207,6 @@ class ApiClient {
       return { data }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-      console.error(`💥 API Request Failed:`, errorMessage)
 
       if (errorMessage.includes('Failed to fetch') || errorMessage.includes('NetworkError')) {
         return {

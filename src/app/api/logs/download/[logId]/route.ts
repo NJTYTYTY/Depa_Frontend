@@ -3,20 +3,14 @@ import { NextRequest, NextResponse } from 'next/server'
 // GET /api/logs/download/[logId] - Download a log file
 export async function GET(
   request: NextRequest,
-  { params }: { params: { logId: string } }
+  { params }: { params: Promise<{ logId: string }> }
 ) {
   try {
-    const { logId } = params
+    const { logId } = await params
     
     // Forward request to backend
     const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
     const downloadUrl = `${backendUrl}/api/v1/logs/${logId}/download`
-    
-    console.log('🔍 Download log request:', {
-      logId,
-      backendUrl,
-      downloadUrl
-    })
     
     const response = await fetch(downloadUrl, {
       method: 'GET',
@@ -25,15 +19,8 @@ export async function GET(
       },
     })
 
-    console.log('🔍 Download response:', {
-      status: response.status,
-      statusText: response.statusText,
-      ok: response.ok
-    })
-
     if (!response.ok) {
       const errorText = await response.text()
-      console.log('🔍 Download error response:', errorText)
       throw new Error(`Backend responded with ${response.status}: ${errorText}`)
     }
 
@@ -42,11 +29,6 @@ export async function GET(
     
     // Get content type from backend response
     const contentType = response.headers.get('content-type') || 'application/octet-stream'
-    
-    console.log('🔍 Download success:', {
-      fileSize: fileData.byteLength,
-      contentType
-    })
     
     // Return the file with proper headers
     return new NextResponse(fileData, {

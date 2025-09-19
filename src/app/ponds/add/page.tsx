@@ -26,9 +26,7 @@ export default function AddPondPage() {
   })
   const [errors, setErrors] = useState<Partial<PondFormData>>({})
   
-  // Debug logging
-  console.log('🔍 AddPondPage - existingPonds:', existingPonds)
-  console.log('🔍 AddPondPage - createPondMutation:', createPondMutation)
+  // Debug logging removed for production
 
   const handleInputChange = (field: keyof PondFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -54,11 +52,7 @@ export default function AddPondPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    console.log('🔍 handleSubmit - formData:', formData)
-    console.log('🔍 handleSubmit - existingPonds length:', existingPonds.length)
-    
     if (!validateForm()) {
-      console.log('❌ Form validation failed')
       return
     }
 
@@ -77,20 +71,13 @@ export default function AddPondPage() {
         notes: `บ่อขนาด ${formData.size} ไร่ สร้างเมื่อ ${formData.date} จำนวนลูกกุ้ง ${formData.shrimp_count} ตัว`
       }
 
-      console.log('📝 Sending pond data:', pondData)
-      console.log('📝 Pond data types:', {
-        name: typeof pondData.name,
-        size: typeof pondData.size,
-        depth: typeof pondData.depth,
-        shrimp_count: typeof pondData.shrimp_count
-      })
+      // Sending pond data to backend
       
       await createPondMutation.mutateAsync(pondData)
       
       alert('เพิ่มบ่อใหม่เรียบร้อยแล้ว')
       router.push('/ponds')
     } catch (error) {
-      console.error('Error creating pond:', error)
       const errorMessage = error instanceof Error ? error.message : 'เกิดข้อผิดพลาดในการเพิ่มบ่อ'
       alert(errorMessage)
     }

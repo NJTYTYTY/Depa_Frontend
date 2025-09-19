@@ -3,10 +3,10 @@ import { NextRequest, NextResponse } from 'next/server'
 // GET /api/logs/[pondId] - Get log files for a specific pond
 export async function GET(
   request: NextRequest,
-  { params }: { params: { pondId: string } }
+  { params }: { params: Promise<{ pondId: string }> }
 ) {
   try {
-    const { pondId } = params
+    const { pondId } = await params
     
     // Forward request to backend
     const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
@@ -24,7 +24,6 @@ export async function GET(
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error fetching logs:', error)
     return NextResponse.json(
       { error: 'Failed to fetch log files' },
       { status: 500 }
