@@ -363,9 +363,9 @@ export default function PondDetailPage() {
                 {latestData.source === 'batch' ? '🚀 Batch Storage' : '📊 Individual'}
               </div>
             )}
-            </div>
           </div>
-          
+        </div>
+
           
 
           {/* Status Bar */}

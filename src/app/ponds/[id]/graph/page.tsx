@@ -24,8 +24,7 @@ export default function GraphPage() {
     'DO': '#10B981',      // Green
     'pH': '#F59E0B',      // Yellow
     'temperature': '#EF4444', // Red
-    'shrimpSize': '#8B5CF6', // Purple
-    'minerals': '#F97316'     // Orange
+    'shrimpSize': '#8B5CF6' // Purple
   }
 
   // Define sensor display names
@@ -33,8 +32,7 @@ export default function GraphPage() {
     'DO': 'DO',
     'pH': 'pH',
     'temperature': 'Temperature',
-    'shrimpSize': 'Shrimp Size',
-    'minerals': 'แร่ธาตุคงเหลือ'
+    'shrimpSize': 'Shrimp Size (CM)'
   }
 
   if (isLoading) {
@@ -121,17 +119,24 @@ export default function GraphPage() {
         {/* Graph Cards */}
         <div className="flex flex-col gap-5">
           {graphData?.sensors ? (
-            Object.entries(graphData.sensors).map(([sensorType, sensorData]) => (
-              <SensorGraph
-                key={sensorType}
-                data={{
-                  ...sensorData,
-                  sensor_type: sensorDisplayNames[sensorType as keyof typeof sensorDisplayNames] || sensorType
-                }}
-                color={sensorColors[sensorType as keyof typeof sensorColors] || '#6B7280'}
-                height={200}
-              />
-            ))
+            Object.entries(graphData.sensors)
+              .filter(([sensorType]) => sensorType !== 'minerals') // Filter out minerals
+               .map(([sensorType, sensorData]) => {
+                 // Get the specific color for this sensor type
+                 const sensorColor = sensorColors[sensorType as keyof typeof sensorColors]
+                 
+                 return (
+                   <SensorGraph
+                     key={sensorType}
+                     data={{
+                       ...sensorData,
+                       sensor_type: sensorDisplayNames[sensorType as keyof typeof sensorDisplayNames] || sensorType
+                     }}
+                     color={sensorColor || '#6B7280'}
+                     height={200}
+                   />
+                 )
+               })
           ) : (
             <div className="text-center py-8">
               <p className="text-gray-500">ไม่มีข้อมูลเซนเซอร์</p>

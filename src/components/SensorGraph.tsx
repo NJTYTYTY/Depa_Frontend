@@ -109,7 +109,7 @@ const SensorGraph: React.FC<SensorGraphProps> = ({
         <ResponsiveContainer width="100%" height={height}>
           <AreaChart data={chartData}>
             <defs>
-              <linearGradient id={`gradient-${data.sensor_type}`} x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id={`gradient-${data.sensor_type.replace(/\s+/g, '-').replace(/[()]/g, '').toLowerCase()}`} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor={color} stopOpacity={0.3} />
                 <stop offset="100%" stopColor={color} stopOpacity={0.05} />
               </linearGradient>
@@ -134,7 +134,7 @@ const SensorGraph: React.FC<SensorGraphProps> = ({
               dataKey="value"
               stroke={color}
               strokeWidth={3}
-              fill={`url(#gradient-${data.sensor_type})`}
+              fill={`url(#gradient-${data.sensor_type.replace(/\s+/g, '-').replace(/[()]/g, '').toLowerCase()})`}
               dot={{ fill: color, strokeWidth: 2, r: 4 }}
               activeDot={{ r: 6, stroke: color, strokeWidth: 2 }}
             />
