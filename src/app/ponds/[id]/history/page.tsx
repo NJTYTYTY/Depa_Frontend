@@ -30,11 +30,9 @@ export default function HistoryPage() {
       if (response.ok) {
         const data = await response.json()
         setLogFiles(data.logFiles || [])
-      } else {
-        console.error('Failed to fetch log files:', response.status)
       }
     } catch (error) {
-      console.error('Error fetching log files:', error)
+      // Handle error silently
     } finally {
       setIsLoading(false)
     }
@@ -57,7 +55,6 @@ export default function HistoryPage() {
         alert('เกิดข้อผิดพลาดในการเพิ่มไฟล์ log')
       }
     } catch (error) {
-      console.error('Error adding log file:', error)
       alert('เกิดข้อผิดพลาดในการเพิ่มไฟล์ log')
     } finally {
       setIsAdding(false)
@@ -77,12 +74,9 @@ export default function HistoryPage() {
         await fetchLogFiles() // Refresh the list
         alert('ลบไฟล์ log เรียบร้อยแล้ว')
       } else {
-        const errorData = await response.json()
-        console.error('Delete error:', errorData)
         alert('เกิดข้อผิดพลาดในการลบไฟล์ log')
       }
     } catch (error) {
-      console.error('Error deleting log file:', error)
       alert('เกิดข้อผิดพลาดในการลบไฟล์ log')
     }
   }
@@ -105,7 +99,6 @@ export default function HistoryPage() {
         alert('เกิดข้อผิดพลาดในการดาวน์โหลดไฟล์')
       }
     } catch (error) {
-      console.error('Error downloading file:', error)
       alert('เกิดข้อผิดพลาดในการดาวน์โหลดไฟล์')
     }
   }

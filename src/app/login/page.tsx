@@ -15,15 +15,6 @@ export default function LoginPage() {
   const { isAuthenticated } = useAuth()
   const loginMutation = useLogin()
 
-  // Debug environment variables
-  console.log("🔍 ENV API URL =", process.env.NEXT_PUBLIC_API_URL)
-  console.log("🔍 NODE_ENV =", process.env.NODE_ENV)
-  console.log("🔍 All ENV vars:", {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
-    NEXT_PUBLIC_BACKEND_MIDDLE_URL: process.env.NEXT_PUBLIC_BACKEND_MIDDLE_URL,
-    NEXT_PUBLIC_RSPI_SERVER_YOKYOR: process.env.NEXT_PUBLIC_RSPI_SERVER_YOKYOR,
-    NODE_ENV: process.env.NODE_ENV
-  })
 
   // ถ้า login แล้วให้ redirect ไป ponds
   useEffect(() => {

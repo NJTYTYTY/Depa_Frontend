@@ -165,16 +165,6 @@ class ApiClient {
 
   constructor(baseUrl: string = API_BASE_URL) {
     this.baseUrl = baseUrl
-    console.log('🔍 apiClient initialized with base URL:', this.baseUrl)
-    console.log('🔍 apiClient - getApiBaseUrl result:', getApiBaseUrl())
-    console.log('🔍 apiClient - process.env.NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL)
-    console.log('🔍 apiClient - window.location:', typeof window !== 'undefined' ? window.location.href : 'server-side')
-    console.log('🔍 apiClient - window.location.hostname:', typeof window !== 'undefined' ? window.location.hostname : 'server-side')
-    console.log('🔍 apiClient - window.location.port:', typeof window !== 'undefined' ? window.location.port : 'server-side')
-    console.log('🔍 apiClient - window.location.protocol:', typeof window !== 'undefined' ? window.location.protocol : 'server-side')
-    console.log('🔍 apiClient - window.location.origin:', typeof window !== 'undefined' ? window.location.origin : 'server-side')
-    console.log('🔍 apiClient - window.location.search:', typeof window !== 'undefined' ? window.location.search : 'server-side')
-    console.log('🔍 apiClient - window.location.hash:', typeof window !== 'undefined' ? window.location.hash : 'server-side')
   }
 
   private async request<T>(path: string, config?: RequestInit): Promise<ApiResponse<T>> {
@@ -188,23 +178,10 @@ class ApiClient {
     const finalConfig = { ...defaultConfig, ...config }
 
     try {
-    
-      console.log(`🌐 API Request: ${config?.method || 'GET'} ${url}`)
-      console.log(`🌐 API Request Headers:`, finalConfig.headers)
-      console.log(`🌐 API Request Body:`, finalConfig.body)
-      console.log(`🌐 API Base URL:`, this.baseUrl)
-      console.log(`🌐 Full URL:`, url)
-
       const response = await fetch(url, finalConfig)
-      console.log(`📡 API Response: ${response.status} ${response.statusText}`)
-      console.log(`📡 API Response Headers:`, Object.fromEntries(response.headers.entries()))
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
-        console.log('🔍 Error response data:', errorData)
-        console.log('🔍 Error response status:', response.status)
-        console.log('🔍 Error response statusText:', response.statusText)
-
         let errorMessage = `HTTP error! status: ${response.status}`
         if (errorData.detail) {
           if (Array.isArray(errorData.detail)) {
@@ -221,8 +198,6 @@ class ApiClient {
         }
 
         console.error(`❌ API Error: ${errorMessage}`)
-        console.error(`❌ API Error - Status: ${response.status}`)
-        console.error(`❌ API Error - URL: ${url}`)
         return {
           data: null as T,
           error: errorMessage,
@@ -230,18 +205,12 @@ class ApiClient {
       }
 
       const data = await response.json()
-      console.log(`✅ API Success:`, data)
-      console.log(`✅ API Success - data type:`, typeof data)
-      console.log(`✅ API Success - data keys:`, Object.keys(data))
       return { data }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
       console.error(`💥 API Request Failed:`, errorMessage)
-      console.error(`💥 API Request Failed - error type:`, typeof error)
-      console.error(`💥 API Request Failed - error stack:`, error instanceof Error ? error.stack : 'No stack')
 
       if (errorMessage.includes('Failed to fetch') || errorMessage.includes('NetworkError')) {
-        console.log('🔍 Network error detected')
         return {
           data: null as T,
           error: 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต',
@@ -249,14 +218,12 @@ class ApiClient {
       }
 
       if (errorMessage.includes('Unexpected token') || errorMessage.includes('JSON')) {
-        console.log('🔍 JSON parsing error detected')
         return {
           data: null as T,
           error: 'เกิดข้อผิดพลาดในการประมวลผลข้อมูลจากเซิร์ฟเวอร์',
         }
       }
 
-      console.log('🔍 Returning generic error')
       return {
         data: null as T,
         error: errorMessage,
@@ -266,14 +233,9 @@ class ApiClient {
 
   // Authentication endpoints
   async login(credentials: LoginCredentials): Promise<ApiResponse<AuthResponse>> {
-    console.log('🔍 Login request:', credentials)
-    console.log('🔍 Login - API Base URL:', this.baseUrl)
-    console.log('🔍 Login - Full URL:', `${this.baseUrl}/api/v1/auth/login`)
-    
     const formData = new URLSearchParams()
     formData.append('username', credentials.phone_number)
     formData.append('password', credentials.password)
-    console.log('🔍 Login - Form data:', formData.toString())
 
     return this.request<AuthResponse>('/api/v1/auth/login', {
       method: 'POST',
@@ -285,7 +247,6 @@ class ApiClient {
   }
 
   async getCurrentUser(token: string): Promise<ApiResponse<User>> {
-    console.log('🔍 Get current user with token:', !!token)
     return this.request<User>('/api/v1/auth/me', {
       method: 'GET',
       headers: {
@@ -295,7 +256,6 @@ class ApiClient {
   }
 
   async refreshToken(refreshToken: string): Promise<ApiResponse<AuthResponse>> {
-    console.log('🔍 Refresh token request')
     return this.request<AuthResponse>('/api/v1/auth/refresh', {
       method: 'POST',
       headers: {
@@ -307,8 +267,6 @@ class ApiClient {
 
   // Pond endpoints
   async createPond(data: CreatePondRequest, token: string): Promise<ApiResponse<Pond>> {
-    console.log('🔍 Create pond request:', data)
-    console.log('🔍 Create pond token:', !!token)
     
     // Send to main backend
     const mainResponse = await this.request<Pond>('/api/v1/ponds/', {
@@ -323,7 +281,6 @@ class ApiClient {
     // Also send to RSPI server if configured
     if (RSPI_SERVER_YOKYOR) {
       try {
-        console.log('🔍 Sending to RSPI server:', RSPI_SERVER_YOKYOR)
         const rspiResponse = await fetch(`${RSPI_SERVER_YOKYOR}/example_info_pond`, {
           method: 'POST',
           headers: {
@@ -332,14 +289,7 @@ class ApiClient {
           },
           body: JSON.stringify(data),
         })
-        
-        if (rspiResponse.ok) {
-          console.log('✅ Successfully sent to RSPI server')
-        } else {
-          console.warn('⚠️ RSPI server response not ok:', rspiResponse.status)
-        }
       } catch (error) {
-        console.warn('⚠️ Failed to send to RSPI server:', error)
         // Don't fail the main request if RSPI fails
       }
     }
@@ -347,7 +297,6 @@ class ApiClient {
     // Also send to backend middle if configured
     if (BACKEND_MIDDLE_URL) {
       try {
-        console.log('🔍 Sending to backend middle:', BACKEND_MIDDLE_URL)
         const middleResponse = await fetch(`${BACKEND_MIDDLE_URL}/example_info_pond`, {
           method: 'POST',
           headers: {
@@ -356,14 +305,7 @@ class ApiClient {
           },
           body: JSON.stringify(data),
         })
-        
-        if (middleResponse.ok) {
-          console.log('✅ Successfully sent to backend middle')
-        } else {
-          console.warn('⚠️ Backend middle response not ok:', middleResponse.status)
-        }
       } catch (error) {
-        console.warn('⚠️ Failed to send to backend middle:', error)
         // Don't fail the main request if middle fails
       }
     }
@@ -372,7 +314,6 @@ class ApiClient {
   }
 
   async getPonds(token: string): Promise<ApiResponse<Pond[]>> {
-    console.log('🔍 Get ponds request with token:', !!token)
     return this.request<Pond[]>('/api/v1/ponds/', {
       method: 'GET',
       headers: {
@@ -382,7 +323,6 @@ class ApiClient {
   }
 
   async getPond(id: string, token: string): Promise<ApiResponse<Pond>> {
-    console.log('🔍 Get pond request:', id)
     return this.request<Pond>(`/api/v1/ponds/${id}`, {
       method: 'GET',
       headers: {
@@ -392,7 +332,6 @@ class ApiClient {
   }
 
   async updatePond(id: string, data: Partial<CreatePondRequest>, token: string): Promise<ApiResponse<Pond>> {
-    console.log('🔍 Update pond request:', id, data)
     return this.request<Pond>(`/api/v1/ponds/${id}`, {
       method: 'PUT',
       headers: {
@@ -404,7 +343,6 @@ class ApiClient {
   }
 
   async deletePond(id: string, token: string): Promise<ApiResponse<void>> {
-    console.log('🔍 Delete pond request:', id)
     return this.request<void>(`/api/v1/ponds/${id}`, {
       method: 'DELETE',
       headers: {
@@ -415,7 +353,6 @@ class ApiClient {
 
   // Sensor readings endpoints
   async getSensorReadings(pondId: string, token: string, params?: PaginationParams): Promise<ApiResponse<SensorReading[]>> {
-    console.log('🔍 Get sensor readings request:', pondId)
     const queryParams = new URLSearchParams()
     if (params?.cursor) queryParams.append('cursor', params.cursor)
     if (params?.limit) queryParams.append('limit', params.limit.toString())
@@ -433,7 +370,6 @@ class ApiClient {
 
   // Latest sensor data (optimized batch storage)
   async getLatestSensorData(pondId: string, token?: string): Promise<ApiResponse<any>> {
-    console.log('🔍 Get latest sensor data request:', pondId)
     const headers: Record<string, string> = {}
     if (token) {
       headers['Authorization'] = `Bearer ${token}`
@@ -447,7 +383,6 @@ class ApiClient {
 
   // Sensor batch history
   async getSensorBatchHistory(pondId: string, limit?: number): Promise<ApiResponse<any>> {
-    console.log('🔍 Get sensor batch history request:', pondId, 'limit:', limit)
     const queryParams = new URLSearchParams()
     if (limit) queryParams.append('limit', limit.toString())
     
@@ -461,7 +396,6 @@ class ApiClient {
 
   // Send batch sensor data
   async sendBatchSensorData(data: any): Promise<ApiResponse<any>> {
-    console.log('🔍 Send batch sensor data request:', data)
     return this.request<any>('/api/v1/sensors/batch-sensor-data', {
       method: 'POST',
       headers: {
@@ -473,7 +407,6 @@ class ApiClient {
 
   // Media endpoints
   async getMedia(pondId: string, token: string, params?: PaginationParams): Promise<ApiResponse<MediaAsset[]>> {
-    console.log('🔍 Get media request:', pondId)
     const queryParams = new URLSearchParams()
     if (params?.cursor) queryParams.append('cursor', params.cursor)
     if (params?.limit) queryParams.append('limit', params.limit.toString())
@@ -491,7 +424,6 @@ class ApiClient {
 
   // Control endpoints
   async sendControl(pondId: string, controlType: string, value: any, token: string): Promise<ApiResponse<ControlLog>> {
-    console.log('🔍 Send control request:', pondId, controlType, value)
     return this.request<ControlLog>(`/api/v1/ponds/${pondId}/control`, {
       method: 'POST',
       headers: {
@@ -504,7 +436,6 @@ class ApiClient {
 
   // History endpoints
   async getHistory(pondId: string, token: string, timeRange?: TimeRange): Promise<ApiResponse<Event[]>> {
-    console.log('🔍 Get history request:', pondId, timeRange)
     const queryParams = new URLSearchParams()
     if (timeRange?.from) queryParams.append('from', timeRange.from)
     if (timeRange?.to) queryParams.append('to', timeRange.to)
@@ -540,7 +471,6 @@ class ApiClient {
 
   // Health check
   async healthCheck(): Promise<ApiResponse<{ status: string }>> {
-    console.log('🔍 Health check request')
     return this.request<{ status: string }>('/api/v1/health', {
       method: 'GET',
     })

@@ -165,7 +165,7 @@ export default function GraphPage() {
         {/* Title Section */}
         <div className="text-center">
           <h2 className="font-bold text-xl text-[#1c170d] m-0">ข้อมูลของเซนเซอร์</h2>
-          <p className="text-sm text-gray-600 mt-1">ข้อมูลแบบ Real-time (อัปเดตทุก 30 วินาที)</p>
+          <p className="text-sm text-gray-600 mt-1">ข้อมูลแบบ Real-time (อัปเดตทุก 5 วินาที)</p>
         </div>
 
         {/* Regular Sensor Cards (DO, pH, Temperature) - 24 hours */}

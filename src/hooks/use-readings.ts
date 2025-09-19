@@ -71,31 +71,23 @@ export function useCurrentReadings(pondId: string) {
 export function useLatestSensorData(pondId: string) {
   const { accessToken } = useAuth()
   
-  console.log('🔧 useLatestSensorData called with pondId:', pondId, 'accessToken:', !!accessToken)
-  
   return useQuery({
-    queryKey: ['latest-sensor-data', pondId], // Remove Date.now() to prevent constant refetch
+    queryKey: ['latest-sensor-data', pondId],
     queryFn: async (): Promise<LatestSensorData> => {
-      console.log('🚀 Fetching latest sensor data for pond:', pondId)
       const response = await apiClient.getLatestSensorData(pondId, accessToken || undefined)
       
-      console.log('📡 API response:', response)
-      
       if (response.error) {
-        console.error('❌ API error:', response.error)
         throw new Error(response.error)
       }
       
-      console.log('✅ API success, data:', response.data)
       return response.data as LatestSensorData
     },
     enabled: !!pondId && !!accessToken,
-    // Fetch only when page loads - no automatic refetching
-    staleTime: 0, // Always consider data stale to force refetch on mount
-    gcTime: 0, // Don't cache data
+    // Fetch every 5 seconds for real-time updates
+    refetchInterval: 5000, // Refetch every 5 seconds
+    staleTime: 3000, // Consider data stale after 3 seconds
     refetchOnMount: true, // Always refetch on mount
     refetchOnWindowFocus: false, // Don't refetch on window focus
-    refetchInterval: false, // Disable automatic refetching
   })
 }
 

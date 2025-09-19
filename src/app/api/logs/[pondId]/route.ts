@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
-
+// GET /api/logs/[pondId] - Get log files for a specific pond
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ pondId: string }> }
+  { params }: { params: { pondId: string } }
 ) {
   try {
-    const { pondId } = await params
-
-    const response = await fetch(`${BACKEND_URL}/api/v1/logs/${pondId}`, {
+    const { pondId } = params
+    
+    // Forward request to backend
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+    const response = await fetch(`${backendUrl}/api/v1/logs/${pondId}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -17,19 +18,15 @@ export async function GET(
     })
 
     if (!response.ok) {
-      const errorData = await response.json()
-      return NextResponse.json(
-        { error: errorData.detail || 'Failed to fetch log files' },
-        { status: response.status }
-      )
+      throw new Error(`Backend responded with ${response.status}`)
     }
 
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error fetching log files:', error)
+    console.error('Error fetching logs:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Failed to fetch log files' },
       { status: 500 }
     )
   }

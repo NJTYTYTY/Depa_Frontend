@@ -37,9 +37,6 @@ export const useGraphData = ({
       
       // Transform backend response to match expected format
       const backendData = response.data
-      console.log('🔍 Backend response:', backendData)
-      console.log('🔍 Sensors data:', backendData.sensors)
-      console.log('🔍 DO data_points:', backendData.sensors?.DO?.data_points?.length || 0)
       
       if (backendData.success) {
         const transformedData = {
@@ -51,15 +48,14 @@ export const useGraphData = ({
           },
           total_points: backendData.tnts || 24
         }
-        console.log('🔍 Transformed data:', transformedData)
         return transformedData
       } else {
         throw new Error('API returned success: false')
       }
     },
     enabled: enabled && !!pondId,
-    refetchInterval: 30000, // Refetch every 30 seconds for real-time updates
-    staleTime: 10000, // Consider data stale after 10 seconds
+    refetchInterval: 5000, // Refetch every 5 seconds for real-time updates
+    staleTime: 3000, // Consider data stale after 3 seconds
   })
 }
 
@@ -93,7 +89,7 @@ export const useSensorGraphData = (pondId: number, sensorType: string, hours = 2
       }
     },
     enabled: !!pondId && !!sensorType,
-    refetchInterval: 30000,
-    staleTime: 10000,
+    refetchInterval: 5000, // Refetch every 5 seconds for real-time updates
+    staleTime: 3000, // Consider data stale after 3 seconds
   })
 }

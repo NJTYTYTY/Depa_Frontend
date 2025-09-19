@@ -1,35 +1,49 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
-
+// DELETE /api/logs/delete/[logId] - Delete a log file
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ logId: string }> }
+  { params }: { params: { logId: string } }
 ) {
   try {
-    const { logId } = await params
-
-    const response = await fetch(`${BACKEND_URL}/api/v1/logs/${logId}`, {
+    const { logId } = params
+    
+    // Forward request to backend
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+    const deleteUrl = `${backendUrl}/api/v1/logs/${logId}`
+    
+    console.log('🔍 Delete log request:', {
+      logId,
+      backendUrl,
+      deleteUrl
+    })
+    
+    const response = await fetch(deleteUrl, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
       },
     })
 
+    console.log('🔍 Delete response:', {
+      status: response.status,
+      statusText: response.statusText,
+      ok: response.ok
+    })
+
     if (!response.ok) {
-      const errorData = await response.json()
-      return NextResponse.json(
-        { error: errorData.detail || 'Failed to delete log file' },
-        { status: response.status }
-      )
+      const errorText = await response.text()
+      console.log('🔍 Delete error response:', errorText)
+      throw new Error(`Backend responded with ${response.status}: ${errorText}`)
     }
 
     const data = await response.json()
+    console.log('🔍 Delete success:', data)
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error deleting log file:', error)
+    console.error('Error deleting log:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Failed to delete log file' },
       { status: 500 }
     )
   }

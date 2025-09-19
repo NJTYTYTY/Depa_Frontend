@@ -1,42 +1,65 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
-
+// GET /api/logs/download/[logId] - Download a log file
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ logId: string }> }
+  { params }: { params: { logId: string } }
 ) {
   try {
-    const { logId } = await params
-
-    const response = await fetch(`${BACKEND_URL}/api/v1/logs/${logId}/download`, {
+    const { logId } = params
+    
+    // Forward request to backend
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+    const downloadUrl = `${backendUrl}/api/v1/logs/${logId}/download`
+    
+    console.log('🔍 Download log request:', {
+      logId,
+      backendUrl,
+      downloadUrl
+    })
+    
+    const response = await fetch(downloadUrl, {
       method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    console.log('🔍 Download response:', {
+      status: response.status,
+      statusText: response.statusText,
+      ok: response.ok
     })
 
     if (!response.ok) {
-      const errorData = await response.json()
-      return NextResponse.json(
-        { error: errorData.detail || 'Failed to download log file' },
-        { status: response.status }
-      )
+      const errorText = await response.text()
+      console.log('🔍 Download error response:', errorText)
+      throw new Error(`Backend responded with ${response.status}: ${errorText}`)
     }
 
-    // Get the file content and headers
-    const fileBuffer = await response.arrayBuffer()
-    const contentType = response.headers.get('content-type') || 'text/plain'
-    const contentDisposition = response.headers.get('content-disposition') || 'attachment'
-
-    return new NextResponse(fileBuffer, {
+    // Get the file data
+    const fileData = await response.arrayBuffer()
+    
+    // Get content type from backend response
+    const contentType = response.headers.get('content-type') || 'application/octet-stream'
+    
+    console.log('🔍 Download success:', {
+      fileSize: fileData.byteLength,
+      contentType
+    })
+    
+    // Return the file with proper headers
+    return new NextResponse(fileData, {
       status: 200,
       headers: {
         'Content-Type': contentType,
-        'Content-Disposition': contentDisposition,
+        'Content-Disposition': `attachment; filename="log-${logId}.txt"`,
       },
     })
   } catch (error) {
-    console.error('Error downloading log file:', error)
+    console.error('Error downloading log:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Failed to download log file' },
       { status: 500 }
     )
   }
