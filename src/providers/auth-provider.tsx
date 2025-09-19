@@ -72,8 +72,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         logout()
       }
     } catch (error) {
-      console.error('Token refresh failed:', error)
-      logout()
+      console.error('❌ Token refresh failed:', error)
+      console.error('❌ Token refresh error type:', typeof error)
+      console.error('❌ Token refresh error message:', error instanceof Error ? error.message : 'Unknown error')
+      
+      // Only logout if it's a real authentication error
+      if (error instanceof Error && (
+        error.message.includes('401') || 
+        error.message.includes('Unauthorized') ||
+        error.message.includes('Token') ||
+        error.message.includes('Authentication') ||
+        error.message.includes('Invalid refresh token')
+      )) {
+        console.log('🔍 Logging out due to authentication error')
+        logout()
+      } else {
+        console.log('🔍 Network or other error during refresh, keeping current state')
+      }
     }
   }, [logout])
 
@@ -103,11 +118,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       } catch (error) {
         console.error('❌ Auth check failed:', error)
-        // Clear invalid tokens
-        localStorage.removeItem('access_token')
-        localStorage.removeItem('refresh_token')
-        localStorage.removeItem('user_phone')
-        setAccessToken(null)
+        console.error('❌ Auth check error type:', typeof error)
+        console.error('❌ Auth check error message:', error instanceof Error ? error.message : 'Unknown error')
+        
+        // Only clear tokens if it's a real authentication error
+        if (error instanceof Error && (
+          error.message.includes('401') || 
+          error.message.includes('Unauthorized') ||
+          error.message.includes('Token') ||
+          error.message.includes('Authentication')
+        )) {
+          console.log('🔍 Clearing tokens due to authentication error')
+          localStorage.removeItem('access_token')
+          localStorage.removeItem('refresh_token')
+          localStorage.removeItem('user_phone')
+          setAccessToken(null)
+        } else {
+          console.log('🔍 Network or other error, keeping tokens for retry')
+        }
       }
     } else {
       console.log('⚠️ No tokens found, user not authenticated')

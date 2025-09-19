@@ -169,6 +169,7 @@ class ApiClient {
     const finalConfig = { ...defaultConfig, ...config }
 
     try {
+    
       console.log(`🌐 API Request: ${config?.method || 'GET'} ${url}`)
       console.log(`🌐 API Request Headers:`, finalConfig.headers)
       console.log(`🌐 API Request Body:`, finalConfig.body)
@@ -201,6 +202,8 @@ class ApiClient {
         }
 
         console.error(`❌ API Error: ${errorMessage}`)
+        console.error(`❌ API Error - Status: ${response.status}`)
+        console.error(`❌ API Error - URL: ${url}`)
         return {
           data: null as T,
           error: errorMessage,
@@ -444,6 +447,24 @@ class ApiClient {
         'Authorization': `Bearer ${token}`,
       },
     })
+  }
+
+  async getBatchData(pondId: string, token?: string): Promise<ApiResponse<any>> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    }
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+    
+    const url = `/api/v1/sensors/yorrkung-batches/${pondId}`
+    
+    const response = await this.request<any>(url, {
+      method: 'GET',
+      headers,
+    })
+    
+    return response
   }
 
   // Health check
