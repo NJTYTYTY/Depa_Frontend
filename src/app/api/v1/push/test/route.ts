@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     const token = authHeader.substring(7)
     
              // Use production backend URL
-    const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
     const response = await fetch(`${backendUrl}/api/v1/push/send`, {
       method: 'POST',
       headers: {
