@@ -1,5 +1,31 @@
 // Use production URLs
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'
+const getApiBaseUrl = () => {
+  if (typeof window !== 'undefined') {
+    // Client-side: use localhost for local development
+    return 'http://localhost:8000'
+  }
+  // Server-side: use localhost
+  return 'http://localhost:8000'
+}
+
+// Get API URL with proper fallback
+const getApiUrl = () => {
+  // If NEXT_PUBLIC_API_URL is set, use it
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL
+  }
+  
+  // For production (Vercel), use the production backend URL
+  if (process.env.NODE_ENV === 'production') {
+    // ใช้ Railway backend URL โดยตรง
+    return 'https://web-production-7909d.up.railway.app'
+  }
+  
+  // For development, use localhost
+  return getApiBaseUrl()
+}
+
+const API_BASE_URL = getApiUrl()
 const BACKEND_MIDDLE_URL = process.env.NEXT_PUBLIC_BACKEND_MIDDLE_URL || null
 const RSPI_SERVER_YOKYOR = process.env.NEXT_PUBLIC_RSPI_SERVER_YOKYOR || null
 
