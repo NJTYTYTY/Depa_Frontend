@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'black-translucent',
+    statusBarStyle: 'default',
     title: 'ShrimpSense',
   },
   formatDetection: {
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   applicationName: 'ShrimpSense',
   other: {
     'mobile-web-app-capable': 'yes',
-    'msapplication-TileColor': '#f2c245',
+    'msapplication-TileColor': '#fcfaf7',
   },
 }
 
@@ -32,7 +32,7 @@ export const viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: 'cover',
-  themeColor: '#f2c245',
+  themeColor: '#fcfaf7',
   interactiveWidget: 'resizes-content',
 }
 
@@ -55,9 +55,9 @@ export default function RootLayout({
         {/* PWA Meta Tags */}
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="ShrimpSense" />
-        <meta name="msapplication-TileColor" content="#f2c245" />
+        <meta name="msapplication-TileColor" content="#fcfaf7" />
       </head>
       <body className={inter.className}>
         <QueryProvider>
