@@ -1,33 +1,7 @@
-// Auto-detect API URL based on environment
-const getApiBaseUrl = () => {
-  if (typeof window !== 'undefined') {
-    // Client-side: use localhost for local development
-    return 'http://localhost:8000'
-  }
-  // Server-side: use localhost
-  return 'http://localhost:8000'
-}
-
-// Get API URL with proper fallback
-const getApiUrl = () => {
-  // If NEXT_PUBLIC_API_URL is set, use it
-  if (process.env.NEXT_PUBLIC_API_URL) {
-    return process.env.NEXT_PUBLIC_API_URL
-  }
-  
-  // For production (Vercel), use the production backend URL
-  if (process.env.NODE_ENV === 'production') {
-    // ใช้ Railway backend URL โดยตรง
-    return 'https://web-production-7909d.up.railway.app'
-  }
-  
-  // For development, use localhost
-  return getApiBaseUrl()
-}
-
-const API_BASE_URL = getApiUrl()
-const BACKEND_MIDDLE_URL = process.env.NEXT_PUBLIC_BACKEND_MIDDLE_URL
-const RSPI_SERVER_YOKYOR = process.env.NEXT_PUBLIC_RSPI_SERVER_YOKYOR
+// Use production URLs
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'
+const BACKEND_MIDDLE_URL = process.env.NEXT_PUBLIC_BACKEND_MIDDLE_URL || null
+const RSPI_SERVER_YOKYOR = process.env.NEXT_PUBLIC_RSPI_SERVER_YOKYOR || null
 
 interface ApiResponse<T> {
   data: T
@@ -46,6 +20,46 @@ export interface User {
   role: 'owner' | 'operator' | 'viewer'
   created_at: string
   updated_at: string
+}
+
+// Push Notification interfaces
+export interface PushSubscriptionData {
+  endpoint: string
+  keys: {
+    p256dh: string
+    auth: string
+  }
+  user_agent?: string
+}
+
+export interface PushMessageData {
+  user_id: number
+  title: string
+  body: string
+  icon?: string
+  badge?: string
+  image?: string
+  url?: string
+  tag?: string
+  data?: Record<string, any>
+  require_interaction?: boolean
+  silent?: boolean
+  vibrate?: number[]
+  actions?: Array<{
+    action: string
+    title: string
+    icon?: string
+  }>
+}
+
+export interface PushNotificationSettings {
+  user_id: number
+  sensor_alerts: boolean
+  pond_updates: boolean
+  system_notifications: boolean
+  maintenance_alerts: boolean
+  created_at?: string
+  updated_at?: string
 }
 
 export interface AuthResponse {
@@ -429,6 +443,73 @@ class ApiClient {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ control_type: controlType, value }),
+    })
+  }
+
+  // Push Notification endpoints
+  async getVapidKeys(): Promise<ApiResponse<{ public_key: string; private_key: string; email: string }>> {
+    return this.request<{ public_key: string; private_key: string; email: string }>('/api/v1/push/vapid-keys', {
+      method: 'GET',
+    })
+  }
+
+  async subscribeToPush(subscriptionData: PushSubscriptionData, token: string): Promise<ApiResponse<{ id: string; user_id: number; endpoint: string; keys: any; created_at: string; is_active: boolean }>> {
+    return this.request<{ id: string; user_id: number; endpoint: string; keys: any; created_at: string; is_active: boolean }>('/api/v1/push/subscribe', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(subscriptionData),
+    })
+  }
+
+  async getPushSubscriptions(token: string): Promise<ApiResponse<Array<{ id: string; user_id: number; endpoint: string; keys: any; created_at: string; is_active: boolean }>>> {
+    return this.request<Array<{ id: string; user_id: number; endpoint: string; keys: any; created_at: string; is_active: boolean }>>('/api/v1/push/subscriptions', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    })
+  }
+
+  async unsubscribeFromPush(subscriptionId: string, token: string): Promise<ApiResponse<{ message: string }>> {
+    return this.request<{ message: string }>(`/api/v1/push/unsubscribe/${subscriptionId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    })
+  }
+
+  async sendPushMessage(messageData: PushMessageData, token: string): Promise<ApiResponse<{ success: boolean; message: string; sent_count: number; failed_count: number; errors?: string[] }>> {
+    return this.request<{ success: boolean; message: string; sent_count: number; failed_count: number; errors?: string[] }>('/api/v1/push/send', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(messageData),
+    })
+  }
+
+  async getPushSettings(token: string): Promise<ApiResponse<PushNotificationSettings>> {
+    return this.request<PushNotificationSettings>('/api/v1/push/settings', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    })
+  }
+
+  async updatePushSettings(settings: Partial<PushNotificationSettings>, token: string): Promise<ApiResponse<PushNotificationSettings>> {
+    return this.request<PushNotificationSettings>('/api/v1/push/settings', {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(settings),
     })
   }
 

@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { usePonds, useDeletePond } from '@/hooks/use-ponds'
 import { useLogout } from '@/hooks/use-auth'
+import PushNotificationPermission from '@/components/PushNotificationPermission'
 
 export default function ShrimpPondsPage() {
   const router = useRouter()
@@ -35,6 +36,7 @@ export default function ShrimpPondsPage() {
     }
   }
 
+
   if (isLoading) {
     return (
       <div className="shrimp-ponds-container">
@@ -64,6 +66,17 @@ export default function ShrimpPondsPage() {
   return (
     <div className="shrimp-ponds-container">
       <div className="main-frame">
+        {/* Push Notification Permission */}
+        <PushNotificationPermission 
+          onPermissionGranted={() => {
+            console.log('Push notification permission granted')
+          }}
+          onPermissionDenied={() => {
+            console.log('Push notification permission denied')
+          }}
+          className="mx-4 mt-4"
+        />
+        
         {/* Header */}
         <div className="header">
           <div className="header-content">
@@ -217,6 +230,7 @@ export default function ShrimpPondsPage() {
           font-weight: 600;
           font-family: 'Inter', 'Noto Sans Thai', sans-serif;
         }
+
 
         .add-button {
           width: 48px;

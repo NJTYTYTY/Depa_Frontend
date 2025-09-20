@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useAuth } from '@/providers/auth-provider'
 import { useLogin } from '@/hooks/use-auth'
 import RouteGuard from '@/components/RouteGuard'
+import PushNotificationPermission from '@/components/PushNotificationPermission'
 
 export default function LoginPage() {
   const [phoneNumber, setPhoneNumber] = useState('')
@@ -59,6 +60,17 @@ export default function LoginPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="form-content">
+            {/* Push Notification Permission */}
+            <PushNotificationPermission 
+              onPermissionGranted={() => {
+                console.log('Push notification permission granted')
+              }}
+              onPermissionDenied={() => {
+                console.log('Push notification permission denied')
+              }}
+              className="mb-4"
+            />
+            
             {/* Phone Input */}
             <div className="input-section">
               <div className="input-wrapper">
