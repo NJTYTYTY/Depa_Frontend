@@ -66,7 +66,7 @@ export default function ShrimpPondsPage() {
   return (
     <div className="shrimp-ponds-container">
       <div className="main-frame">
-        {/* Push Notification Permission */}
+        {/* Push Notification Permission Modal */}
         <PushNotificationPermission 
           onPermissionGranted={() => {
             console.log('Push notification permission granted')
@@ -74,7 +74,6 @@ export default function ShrimpPondsPage() {
           onPermissionDenied={() => {
             console.log('Push notification permission denied')
           }}
-          className="mx-4 mt-4"
         />
         
         {/* Header */}
