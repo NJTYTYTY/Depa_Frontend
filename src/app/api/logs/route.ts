@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
- POST /api/logs - Create new log file
+// POST /api/logs - Create new log file
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
