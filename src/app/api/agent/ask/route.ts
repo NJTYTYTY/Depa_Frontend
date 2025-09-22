@@ -1,55 +1,61 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 
+// ✅ Schema สำหรับ validate request body
+const requestSchema = z.object({
+  question: z.string().min(1, 'กรุณาพิมพ์คำถาม'),
+  pondId: z.string().optional(),
+  pondData: z.object({}).passthrough().optional(),
+})
+
+
+// ✅ Helper: จัดรูปข้อมูลบ่อให้อ่านง่าย
+function formatPondData(pondData: any) {
+  if (!pondData) return 'ไม่มีข้อมูลบ่อ'
+
+  return `
+- ชื่อบ่อ: ${pondData?.name ?? 'ไม่ระบุ'}
+- ขนาดบ่อ: ${pondData?.size ?? 'ไม่ระบุ'} ไร่
+- วันที่ลงบ่อ: ${pondData?.date ?? 'ไม่ระบุ'}
+- ขนาด ก x ย: ${pondData?.dimensions ?? 'ไม่ระบุ'}
+- ความลึกบ่อ: ${pondData?.depth ?? 'ไม่ระบุ'} เมตร
+- จำนวนลูกกุ้งที่ปล่อย: ${pondData?.shrimp_count ?? 'ไม่ระบุ'} ตัว
+- ที่ตั้งบ่อ: ${pondData?.location ?? 'ไม่ระบุ'}
+- หมายเหตุ: ${pondData?.notes ?? 'ไม่มี'}
+- วันที่สร้างบ่อ: ${pondData?.created_at ? new Date(pondData.created_at).toLocaleDateString('th-TH') : 'ไม่ระบุ'}
+- วันที่อัปเดตล่าสุด: ${pondData?.updated_at ? new Date(pondData.updated_at).toLocaleDateString('th-TH') : 'ไม่ระบุ'}
+`
+}
+
+// ✅ API Route
 export async function POST(request: NextRequest) {
   try {
-    const { question, pondId, pondData } = await request.json()
+    // 1) อ่านและ validate body
+    const body = await request.json().catch(() => null)
+    const { question, pondId, pondData } = requestSchema.parse(body)
 
-    // Debug logging
-    console.log('🤖 Agent API Debug:')
-    console.log('- Question:', question)
-    console.log('- Pond ID:', pondId)
-    console.log('- Pond Data:', pondData)
-    console.log('- Environment:', process.env.NODE_ENV)
-    console.log('- API Key exists:', !!process.env.GEMINI_API_KEY)
-
-    if (!question) {
-      return NextResponse.json(
-        { answer: 'กรุณาพิมพ์คำถาม' },
-        { status: 400 }
-      )
-    }
-
-    // ตรวจสอบ API key
+    // 2) ตรวจสอบ API key
     const apiKey = process.env.GEMINI_API_KEY
     if (!apiKey) {
-      console.error('GEMINI_API_KEY is not set')
       return NextResponse.json(
-        { 
-          answer: 'ผู้ช่วย AI ยังไม่พร้อมใช้งาน กรุณาติดต่อผู้ดูแลระบบ',
-          error: 'GEMINI_API_KEY is not configured',
-          environment: process.env.NODE_ENV
+        {
+          success: false,
+          error: {
+            message: 'ผู้ช่วย AI ยังไม่พร้อมใช้งาน กรุณาติดต่อผู้ดูแลระบบ',
+            code: 'NO_API_KEY',
+            environment: process.env.NODE_ENV,
+          },
         },
         { status: 500 }
       )
     }
 
-    // สร้าง context สำหรับ Gemini
+    // 3) สร้าง context
     const context = `
 คุณคือผู้ช่วย AI ที่เชี่ยวชาญด้านการเลี้ยงกุ้งและบ่อเลี้ยงกุ้ง
 
-ข้อมูลบ่อปัจจุบัน (ID: ${pondId}):
-- ชื่อบ่อ: ${pondData?.name || 'ไม่ระบุ'}
-- ขนาดบ่อ: ${pondData?.size || 'ไม่ระบุ'} ไร่
-- วันที่ลงบ่อ: ${pondData?.date || 'ไม่ระบุ'}
-- ขนาด ก x ย: ${pondData?.dimensions || 'ไม่ระบุ'}
-- ความลึกบ่อ: ${pondData?.depth || 'ไม่ระบุ'} เมตร
-- จำนวนลูกกุ้งที่ปล่อย: ${pondData?.shrimp_count || 'ไม่ระบุ'} ตัว
-- ที่ตั้งบ่อ: ${pondData?.location || 'ไม่ระบุ'}
-- หมายเหตุ: ${pondData?.notes || 'ไม่มี'}
-
-ข้อมูลเพิ่มเติม:
-- วันที่สร้างบ่อ: ${pondData?.created_at ? new Date(pondData.created_at).toLocaleDateString('th-TH') : 'ไม่ระบุ'}
-- วันที่อัปเดตล่าสุด: ${pondData?.updated_at ? new Date(pondData.updated_at).toLocaleDateString('th-TH') : 'ไม่ระบุ'}
+ข้อมูลบ่อปัจจุบัน (ID: ${pondId ?? 'ไม่ระบุ'}):
+${formatPondData(pondData)}
 
 คำแนะนำในการตอบ:
 - ตอบเป็นภาษาไทยที่เข้าใจง่ายสำหรับเกษตรกร
@@ -63,47 +69,68 @@ export async function POST(request: NextRequest) {
 คำถาม: ${question}
 `
 
-    // Debug: แสดง context ที่สร้างขึ้น
-    console.log('🤖 Generated Context:')
-    console.log(context)
+    // 🔍 log context เฉพาะ dev
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('🤖 Generated Context:', context)
+    }
 
-    // เรียกใช้ Gemini API
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: context
-          }]
-        }]
-      })
-    })
+    // 4) เรียก Gemini API พร้อม timeout
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 10000) // 10s timeout
 
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: context }] }],
+        }),
+        signal: controller.signal,
+      }
+    )
+
+    clearTimeout(timeout)
+
+    // 5) ตรวจสอบ response
     if (!response.ok) {
-      throw new Error(`Gemini API error: ${response.status}`)
+      const errText = await response.text()
+      console.error('Gemini API error response:', errText)
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            message: 'AI API เรียกใช้งานไม่สำเร็จ',
+            code: response.status,
+            details: errText,
+          },
+        },
+        { status: 500 }
+      )
     }
 
     const data = await response.json()
-    const answer = data.candidates?.[0]?.content?.parts?.[0]?.text || 'ไม่สามารถสร้างคำตอบได้'
+    const answer =
+      data.candidates?.[0]?.content?.parts?.[0]?.text ||
+      'ไม่สามารถสร้างคำตอบได้'
 
-    return NextResponse.json({ answer })
-
-  } catch (error) {
-    console.error('Error calling Gemini API:', error)
-    console.error('Error details:', {
-      message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined,
-      environment: process.env.NODE_ENV
+    // 6) ส่งกลับ standardized response
+    return NextResponse.json({
+      success: true,
+      data: { answer },
     })
-    
+  } catch (error) {
+    console.error('Error in POST /api/agent:', error)
+
     return NextResponse.json(
-      { 
-        answer: 'ขออภัย เกิดข้อผิดพลาดในการเชื่อมต่อกับผู้ช่วย AI กรุณาลองใหม่อีกครั้ง',
-        error: error instanceof Error ? error.message : 'Unknown error',
-        environment: process.env.NODE_ENV
+      {
+        success: false,
+        error: {
+          message:
+            error instanceof Error ? error.message : 'Unknown error occurred',
+          code: 500,
+          environment: process.env.NODE_ENV,
+        },
       },
       { status: 500 }
     )

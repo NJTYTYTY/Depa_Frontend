@@ -15,7 +15,6 @@ interface UpdateAvailableEvent extends Event {
 export default function ServiceWorkerRegistration({ children }: ServiceWorkerRegistrationProps) {
   const [isUpdateAvailable, setIsUpdateAvailable] = useState(false);
   const [isInstalling, setIsInstalling] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
   useEffect(() => {
     // Only run on client side
@@ -26,8 +25,6 @@ export default function ServiceWorkerRegistration({ children }: ServiceWorkerReg
       registerServiceWorker();
     }
 
-    // Listen for PWA install prompt
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     
     // Listen for app installed
     window.addEventListener('appinstalled', handleAppInstalled);
@@ -37,7 +34,6 @@ export default function ServiceWorkerRegistration({ children }: ServiceWorkerReg
 
     return () => {
       if (typeof window !== 'undefined') {
-        window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
         window.removeEventListener('appinstalled', handleAppInstalled);
         window.removeEventListener('sw-update-available', handleUpdateAvailable as EventListener);
       }
@@ -93,19 +89,8 @@ export default function ServiceWorkerRegistration({ children }: ServiceWorkerReg
     }
   };
 
-  const handleBeforeInstallPrompt = (e: Event) => {
-    // Prevent the mini-infobar from appearing on mobile
-    e.preventDefault();
-    
-    // Stash the event so it can be triggered later
-    setDeferredPrompt(e);
-    
-    console.log('📱 PWA install prompt available');
-  };
-
   const handleAppInstalled = () => {
     console.log('✅ PWA installed successfully');
-    setDeferredPrompt(null);
     
     // Track installation
     if ('gtag' in window) {
@@ -148,36 +133,6 @@ export default function ServiceWorkerRegistration({ children }: ServiceWorkerReg
     }
   };
 
-  const handleInstallPWA = async () => {
-    if (!deferredPrompt) {
-      console.log('❌ No install prompt available');
-      return;
-    }
-
-    try {
-      setIsInstalling(true);
-      
-      // Show the install prompt
-      deferredPrompt.prompt();
-      
-      // Wait for the user to respond to the prompt
-      const { outcome } = await deferredPrompt.userChoice;
-      
-      if (outcome === 'accepted') {
-        console.log('✅ User accepted the install prompt');
-      } else {
-        console.log('❌ User dismissed the install prompt');
-      }
-      
-      // Clear the deferred prompt
-      setDeferredPrompt(null);
-      
-    } catch (error) {
-      console.error('❌ PWA installation failed:', error);
-    } finally {
-      setIsInstalling(false);
-    }
-  };
 
   const handleCacheUrls = async (urls: string[]) => {
     if (typeof window === 'undefined') return;
@@ -252,24 +207,6 @@ export default function ServiceWorkerRegistration({ children }: ServiceWorkerReg
         </div>
       )}
 
-      {/* PWA Install Prompt */}
-      {deferredPrompt && (
-        <div className="fixed bottom-4 left-4 bg-green-600 text-white p-4 rounded-lg shadow-lg z-50 max-w-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="font-semibold">ติดตั้งแอป</h4>
-              <p className="text-sm opacity-90">เพิ่ม ShrimpSense ลงหน้าจอหลัก</p>
-            </div>
-            <button
-              onClick={handleInstallPWA}
-              disabled={isInstalling}
-              className="bg-white text-green-600 px-3 py-1 rounded text-sm font-medium hover:bg-gray-100 disabled:opacity-50"
-            >
-              {isInstalling ? 'กำลังติดตั้ง...' : 'ติดตั้ง'}
-            </button>
-          </div>
-        </div>
-      )}
     </>
   );
 }
