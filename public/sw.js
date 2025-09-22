@@ -24,7 +24,10 @@ self.addEventListener("push", (event) => {
         icon: data.icon || "/icons/icon-192x192.png",
         badge: data.badge || "/icons/icon-72x72.png",
         image: data.image,
-        data: data.data || {},
+        data: {
+          ...data.data,
+          url: data.url  // เก็บ URL ไว้ใน data object
+        },
         tag: data.tag || "shrimp-sense-notification",
         requireInteraction: data.requireInteraction || false,
         silent: data.silent || false,
