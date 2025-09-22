@@ -188,8 +188,8 @@ export default function PWADebug() {
       if (Notification.permission === 'granted') {
         new Notification('ShrimpSense Test', {
           body: 'นี่คือการทดสอบการแจ้งเตือน',
-          icon: '/icon-192x192.png',
-          badge: '/icon-192x192.png'
+          icon: '/icons/icon-192x192.png',
+          badge: '/icons/icon-192x192.png'
         });
       } else if (Notification.permission !== 'denied') {
         const permission = await Notification.requestPermission();

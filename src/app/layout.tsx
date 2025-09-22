@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   formatDetection: {
     telephone: false,
   },
-  applicationName: 'ShrimpSense',
+  applicationName: 'Smart Shrimp Farm',
   other: {
     'mobile-web-app-capable': 'yes',
     'msapplication-TileColor': '#fcfaf7',

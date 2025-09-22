@@ -54,7 +54,7 @@ self.addEventListener("push", (event) => {
       
       // Fallback notification
       event.waitUntil(
-        self.registration.showNotification("ShrimpSense", {
+        self.registration.showNotification("Smart Shrimp Farm", {
           body: "คุณได้รับการแจ้งเตือนใหม่",
           icon: "/icons/icon-192x192.png",
           badge: "/icons/icon-72x72.png",
