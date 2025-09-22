@@ -2,6 +2,7 @@
   "name": "ShrimpSense",
   "short_name": "ShrimpSense",
   "description": "ระบบจัดการฟาร์มกุ้งอัจฉริยะ ที่ช่วยให้คุณดูแลบ่อกุ้งได้อย่างมีประสิทธิภาพ",
+  "version": "3.0.0",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#fcfaf7",

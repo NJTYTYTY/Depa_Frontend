@@ -2,12 +2,27 @@
 
 // บังคับ skip waiting (ทันทีที่ install เสร็จ ใช้ SW ใหม่เลย)
 self.addEventListener("install", (event) => {
+  console.log("🔄 Service Worker installing with new logo v3.0.0...");
   self.skipWaiting();
 });
 
 // Claim clients ให้ SW คุมทุกหน้าโดยทันที
 self.addEventListener("activate", (event) => {
-  event.waitUntil(self.clients.claim());
+  console.log("🔄 Service Worker activating with new logo v3.0.0...");
+  event.waitUntil(
+    Promise.all([
+      self.clients.claim(),
+      // ลบ cache เก่าทั้งหมด
+      caches.keys().then(cacheNames => {
+        return Promise.all(
+          cacheNames.map(cacheName => {
+            console.log("🗑️ Deleting old cache:", cacheName);
+            return caches.delete(cacheName);
+          })
+        );
+      })
+    ])
+  );
 });
 
 // Push notification event listener
@@ -139,6 +154,15 @@ self.addEventListener("fetch", (event) => {
     url.pathname.includes(".ttf") ||
     url.pathname.includes(".eot")
   ) {
+    // สำหรับ icons ให้ force refresh
+    if (url.pathname.startsWith("/icons/")) {
+      event.respondWith(
+        fetch(event.request, { cache: 'no-cache' })
+          .catch(() => {
+            return caches.match(event.request);
+          })
+      );
+    }
     return; // ปล่อยผ่านเลย ไม่ต้อง intercept
   }
 

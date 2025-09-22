@@ -47,8 +47,11 @@ export default function RootLayout({
         {/* PWA Manifest Link */}
         <link rel="manifest" href="/manifest.json" />
         
-        {/* PWA Icons */}
-        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+        {/* Favicon and PWA Icons */}
+        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192x192.png" />
         <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512x512.png" />
         
