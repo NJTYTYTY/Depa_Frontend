@@ -25,14 +25,14 @@ const handleLiftToggle = async () => {
   setIsLifting(true)
   
   try {
-    const backendMiddleUrl = process.env.NEXT_PUBLIC_RSPI_SERVER_YOKYOR || 'http://localhost:3002/api'
+    const backendMiddleUrl = process.env.NEXT_PUBLIC_RSPI_SERVER_YOKYOR || 'http://localhost:3002'
     
     // แปลง pondId เป็น string และตรวจสอบ
     const pondIdString = Array.isArray(pondId) ? pondId[0] : pondId
     
     // กำหนด action และ endpoint ตามสถานะปัจจุบัน
     const action = isLiftUp ? 'lift_down' : 'lift_up'
-    const endpoint = isLiftUp ? 'lift-down' : 'lift-up'
+    const endpoint = isLiftUp ? 'api/lift-down' : 'api/lift-up'
     
     // สร้าง request body
     const requestBody = {
