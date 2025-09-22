@@ -78,6 +78,18 @@ export interface PushMessageData {
   }>
 }
 
+export interface ShrimpAlertRequest {
+  user_id: number
+  body?: string
+  image?: string
+  url?: string
+  data?: {
+    pond_id?: string
+    timestamp?: string
+    [key: string]: any
+  }
+}
+
 export interface PushNotificationSettings {
   user_id: number
   sensor_alerts: boolean
@@ -517,6 +529,24 @@ class ApiClient {
       },
       body: JSON.stringify(messageData),
     })
+  }
+
+  async sendShrimpAlert(alertData: ShrimpAlertRequest, token: string): Promise<ApiResponse<{ success: boolean; message: string; sent_count: number; failed_count: number; errors?: string[] }>> {
+    // สร้าง message data สำหรับ shrimp alert
+    const messageData: PushMessageData = {
+      user_id: alertData.user_id,
+      title: "พบกุ้งลอยบนผิวน้ำ!!!", // หัวข้อจะถูก override ใน backend
+      body: alertData.body || "ตรวจพบกุ้งลอยบนผิวน้ำ ควรตรวจสอบทันที",
+      image: alertData.image,
+      url: alertData.url,
+      tag: "shrimp-alert", // ใช้ tag นี้เพื่อให้ backend รู้ว่าเป็น shrimp alert
+      data: alertData.data,
+      require_interaction: true,
+      silent: false,
+      vibrate: [200, 100, 200, 100, 200]
+    }
+
+    return this.sendPushMessage(messageData, token)
   }
 
   async getPushSettings(token: string): Promise<ApiResponse<PushNotificationSettings>> {
