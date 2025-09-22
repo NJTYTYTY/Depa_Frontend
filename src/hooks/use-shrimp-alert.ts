@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { apiClient, ShrimpAlertRequest } from '@/lib/api-client';
-import { useAuth } from './use-auth';
+import { useAuth } from '@/providers/auth-provider';
 
 export function useSendShrimpAlert() {
   const { accessToken } = useAuth();
