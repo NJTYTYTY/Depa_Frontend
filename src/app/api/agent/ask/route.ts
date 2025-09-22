@@ -9,6 +9,8 @@ export async function POST(request: NextRequest) {
     console.log('- Question:', question)
     console.log('- Pond ID:', pondId)
     console.log('- Pond Data:', pondData)
+    console.log('- Environment:', process.env.NODE_ENV)
+    console.log('- API Key exists:', !!process.env.GEMINI_API_KEY)
 
     if (!question) {
       return NextResponse.json(
@@ -22,7 +24,11 @@ export async function POST(request: NextRequest) {
     if (!apiKey) {
       console.error('GEMINI_API_KEY is not set')
       return NextResponse.json(
-        { answer: 'ผู้ช่วย AI ยังไม่พร้อมใช้งาน กรุณาติดต่อผู้ดูแลระบบ' },
+        { 
+          answer: 'ผู้ช่วย AI ยังไม่พร้อมใช้งาน กรุณาติดต่อผู้ดูแลระบบ',
+          error: 'GEMINI_API_KEY is not configured',
+          environment: process.env.NODE_ENV
+        },
         { status: 500 }
       )
     }
@@ -87,8 +93,18 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Error calling Gemini API:', error)
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      environment: process.env.NODE_ENV
+    })
+    
     return NextResponse.json(
-      { answer: 'ขออภัย เกิดข้อผิดพลาดในการเชื่อมต่อกับผู้ช่วย AI กรุณาลองใหม่อีกครั้ง' },
+      { 
+        answer: 'ขออภัย เกิดข้อผิดพลาดในการเชื่อมต่อกับผู้ช่วย AI กรุณาลองใหม่อีกครั้ง',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        environment: process.env.NODE_ENV
+      },
       { status: 500 }
     )
   }
