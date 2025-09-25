@@ -11,7 +11,7 @@ const nextConfig = {
   },
   // Enable experimental features for better mobile support
   experimental: {
-    esmExternals: false,
+    // esmExternals: false, // Removed as it's deprecated and causing issues
   },
   // Better mobile support
   poweredByHeader: false,

@@ -2,13 +2,18 @@
 
 import { useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import { usePonds } from '@/hooks/use-ponds'
 
 export default function ControlPage() {
   const router = useRouter()
   const params = useParams()
-  const pondId = params.id
+  const pondId = params.id as string
+  const { data: ponds } = usePonds()
   const [isLifting, setIsLifting] = useState(false)
   const [isLiftUp, setIsLiftUp] = useState(false) // สถานะของยอ (ขึ้น/ลง)
+  
+  // Find the current pond
+  const pond = ponds?.find(p => p.id === pondId)
 
   const goBack = () => router.push('/ponds')
 
@@ -86,7 +91,7 @@ const handleLiftToggle = async () => {
               </div>
             </div>
             <div className="title-container">
-              <h1>บ่อที่ 1</h1>
+              <h1>{pond?.name || `บ่อที่ ${pondId}`}</h1>
             </div>
           </div>
         </div>

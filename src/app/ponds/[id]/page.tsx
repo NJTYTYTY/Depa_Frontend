@@ -17,6 +17,11 @@ export default function PondDetailPage() {
   
   // Find the current pond
   const pond = ponds?.find(p => p.id === pondId)
+  
+  // Debug logging
+  console.log('🔍 Debug - pondId:', pondId)
+  console.log('🔍 Debug - ponds:', ponds)
+  console.log('🔍 Debug - found pond:', pond)
 
   // Use the new batch sensor data hook
   const { data: latestData, isLoading: isLoadingLatest, error } = useLatestSensorData(pondId)
@@ -87,6 +92,10 @@ export default function PondDetailPage() {
   // Update sensor data when latestData or batchData changes
   useEffect(() => {
       const newSensorData: { [key: string]: { value: any; status: string; timestamp: string | null; imageUrl?: string } } = { ...sensorData }
+      
+      // Debug logging
+      console.log('🔍 Debug - latestData:', latestData)
+      console.log('🔍 Debug - batchData:', batchData)
       
     // Process latest data (DO, pH, Temp, Water Color, Minerals)
     if (latestData?.data?.sensors) {
@@ -162,76 +171,77 @@ export default function PondDetailPage() {
     }
     
     // Process batch data (Shrimp data)
-    if (batchData?.data) {
+    if (batchData?.success && batchData.data) {
+      console.log('🔍 Debug - Processing batch data:', batchData)
+      
       // Get the latest batch from the batches array
-      const latestBatch = batchData.data.batches && batchData.data.batches.length > 0 
-        ? batchData.data.batches[batchData.data.batches.length - 1] 
-        : null
+      const batches = batchData.data.batches || []
+      const latestBatch = batches.length > 0 ? batches[batches.length - 1] : null
       
-      // Check if data is in sensors object or direct properties
-      const batchDataToProcess = latestBatch?.sensors || batchData.data.sensors || batchData.data
+      console.log('🔍 Debug - Batches count:', batches.length)
+      console.log('🔍 Debug - Latest batch:', latestBatch)
       
-      // If batchDataToProcess is the full response, get the actual data
-      if (batchDataToProcess && batchDataToProcess.success && batchDataToProcess.data) {
-        const actualData = batchDataToProcess.data
+      if (latestBatch && latestBatch.sensors) {
+        const sensors = latestBatch.sensors
+        console.log('🔍 Debug - Sensors data:', sensors)
         
-        if (actualData.batches && actualData.batches.length > 0) {
-          const latestBatchFromNested = actualData.batches[actualData.batches.length - 1]
-          
-          // Use the sensors from the nested structure
-          const finalBatchDataToProcess = latestBatchFromNested?.sensors || actualData
-          
-          // Process the data
-          if (finalBatchDataToProcess && typeof finalBatchDataToProcess === 'object') {
-            const batchMapping: { [key: string]: string } = {
-              'size_cm': 'shrimpSize',
-              'size_gram': 'shrimpWeight',
-              'sizePicture': 'sizePicture',
-              'foodPicture': 'foodPicture',
-              'kungDinPicture': 'kungDinPicture'
-            }
-            
-            Object.keys(batchMapping).forEach((batchKey: string) => {
-              const frontendKey = batchMapping[batchKey]
-              const data = finalBatchDataToProcess[batchKey]
-              
-              if (data !== undefined && data !== null) {
-                if (batchKey === 'sizePicture') {
-                  // Store image URL for shrimp size
-                  if (newSensorData.shrimpSize) {
-                    newSensorData.shrimpSize.imageUrl = data.value || data
-                  }
-                } else if (batchKey === 'foodPicture') {
-                  // Store image URL for food
-                  if (!newSensorData.food) {
-                    newSensorData.food = { value: 'รูปอาหารบนยอ', status: 'info', timestamp: null }
-                  }
-                  newSensorData.food.imageUrl = data.value || data
-                } else if (batchKey === 'kungDinPicture') {
-                  // Store video URL for shrimp movement
-                  if (!newSensorData.shrimpVideo) {
-                    newSensorData.shrimpVideo = { value: 'วิดีโอกุ้งดิ้น', status: 'info', timestamp: null }
-                  }
-                  newSensorData.shrimpVideo.imageUrl = data.value || data
-                } else {
-                  // Store regular sensor data
-                  const value = data.value !== undefined ? data.value : data
-                  const status = data.status || 'green'
-                  
-                  newSensorData[frontendKey] = {
-                    value: value,
-                    status: status,
-                    timestamp: data.timestamp || batchData.data.timestamp || null,
-                    imageUrl: undefined
-                  }
-                }
-              }
-            })
-          }
+        // Process shrimp data from batch
+        const batchMapping: { [key: string]: string } = {
+          'size_cm': 'shrimpSize',
+          'size_gram': 'shrimpWeight',
+          'sizePicture': 'sizePicture',
+          'foodPicture': 'foodPicture',
+          'kungDinPicture': 'kungDinPicture'
         }
+        
+        Object.keys(batchMapping).forEach((batchKey: string) => {
+          const frontendKey = batchMapping[batchKey]
+          const data = sensors[batchKey]
+          
+          console.log(`🔍 Debug - Processing ${batchKey} -> ${frontendKey}:`, data)
+          
+          if (data !== undefined && data !== null) {
+            if (batchKey === 'sizePicture') {
+              // Store image URL for shrimp size
+              if (newSensorData.shrimpSize) {
+                newSensorData.shrimpSize.imageUrl = data.value || data
+              }
+            } else if (batchKey === 'foodPicture') {
+              // Store image URL for food
+              if (!newSensorData.food) {
+                newSensorData.food = { value: 'รูปอาหารบนยอ', status: 'info', timestamp: null }
+              }
+              newSensorData.food.imageUrl = data.value || data
+            } else if (batchKey === 'kungDinPicture') {
+              // Store video URL for shrimp movement
+              if (!newSensorData.shrimpVideo) {
+                newSensorData.shrimpVideo = { value: 'วิดีโอกุ้งดิ้น', status: 'info', timestamp: null }
+              }
+              newSensorData.shrimpVideo.imageUrl = data.value || data
+            } else {
+              // Store regular sensor data
+              const value = data.value !== undefined ? data.value : data
+              const status = data.status || 'green'
+              
+              newSensorData[frontendKey] = {
+                value: value,
+                status: status,
+                timestamp: data.timestamp || latestBatch.timestamp || null,
+                imageUrl: undefined
+              }
+              
+              console.log(`🔍 Debug - Set ${frontendKey}:`, newSensorData[frontendKey])
+            }
+          }
+        })
+      } else {
+        console.log('🔍 Debug - No latest batch or sensors found')
       }
+    } else {
+      console.log('🔍 Debug - No batch data or success=false, batchData:', batchData)
     }
     
+    console.log('🔍 Debug - Final sensor data:', newSensorData)
     setSensorData(newSensorData)
   }, [latestData, batchData, isLoadingLatest, error, batchError])
 
@@ -322,7 +332,9 @@ export default function PondDetailPage() {
               </div>
             </div>
             <div className="flex-1 flex items-center justify-center pr-12">
-              <h1 className="font-bold text-lg leading-6 text-[#1c170d] text-center m-0">{pond?.name || 'บ่อที่ 1'}</h1>
+              <h1 className="font-bold text-lg leading-6 text-[#1c170d] text-center m-0">
+                {pond?.name || `บ่อที่ ${pondId}`}
+              </h1>
             </div>
           </div>
         </div>

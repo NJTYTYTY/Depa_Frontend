@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import { usePonds } from '@/hooks/use-ponds'
 
 interface LogFile {
   id: string
@@ -15,10 +16,14 @@ interface LogFile {
 export default function HistoryPage() {
   const router = useRouter()
   const params = useParams()
-  const pondId = params.id
+  const pondId = params.id as string
+  const { data: ponds } = usePonds()
   const [logFiles, setLogFiles] = useState<LogFile[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isAdding, setIsAdding] = useState(false)
+  
+  // Find the current pond
+  const pond = ponds?.find(p => p.id === pondId)
 
   const goBack = () => router.push('/ponds')
 
@@ -135,7 +140,7 @@ export default function HistoryPage() {
               </div>
             </div>
             <div className="title-container">
-              <h1>บ่อที่ 1</h1>
+              <h1>{pond?.name || `บ่อที่ ${pondId}`}</h1>
             </div>
           </div>
         </div>

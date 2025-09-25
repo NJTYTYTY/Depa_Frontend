@@ -291,6 +291,8 @@ export default function AddPondPage() {
           flex-direction: column;
           width: 100%;
           gap: 0;
+          align-items: center;
+          padding: 20px 16px;
         }
 
         .input-group {
@@ -298,6 +300,7 @@ export default function AddPondPage() {
           position: relative;
           flex-shrink: 0;
           width: 100%;
+          margin-bottom: 16px;
         }
 
         .input-field {
@@ -357,6 +360,8 @@ export default function AddPondPage() {
           width: 100%;
           display: flex;
           flex-direction: column;
+          align-items: center;
+          padding: 0 16px 20px 16px;
         }
 
         .add-button {
@@ -378,7 +383,6 @@ export default function AddPondPage() {
           line-height: 24px;
           color: #1a170f;
           text-align: center;
-          margin: 12px 16px 0 16px;
         }
 
         .add-button:hover {
@@ -430,6 +434,20 @@ export default function AddPondPage() {
         }
 
         /* Responsive Design */
+        @media (max-width: 768px) {
+          .input-group {
+            max-width: 100%;
+          }
+          
+          .form-fields {
+            padding: 16px 12px;
+          }
+          
+          .button-section {
+            padding: 0 12px 16px 12px;
+          }
+        }
+
         @media (max-width: 480px) {
           .main-frame {
             width: 100%;
@@ -443,8 +461,18 @@ export default function AddPondPage() {
             padding: 12px;
           }
           
-          .add-button {
-            margin: 12px 12px 0 12px;
+          .form-fields {
+            padding: 12px 8px;
+          }
+          
+          .button-section {
+            padding: 0 8px 12px 8px;
+          }
+        }
+
+        @media (min-width: 1200px) {
+          .input-group {
+            max-width: 600px;
           }
         }
       `}</style>
