@@ -80,8 +80,15 @@ export default function AddPondPage() {
     
     if (!formData.date.trim()) newErrors.date = 'กรุณาเลือกวันที่'
     if (!formData.size.trim()) newErrors.size = 'กรุณากรอกขนาดบ่อ'
-    if (!formData.dimensions.trim()) newErrors.dimensions = 'กรุณากรอกขนาดบ่อ'
     if (!formData.depth.trim()) newErrors.depth = 'กรุณากรอกความลึก'
+    
+    // ตรวจสอบ dimensions - ต้องมีทั้งกว้างและยาว
+    if (!dimensionsInput.width.trim()) {
+      newErrors.dimensions = 'กรุณากรอกความกว้าง'
+    } else if (!dimensionsInput.length.trim()) {
+      newErrors.dimensions = 'กรุณากรอกความยาว'
+    }
+    
     // shrimp_count is optional - no validation needed
 
     setErrors(newErrors)
@@ -265,7 +272,7 @@ export default function AddPondPage() {
           <div className="popup-content">
             <div className="loading-spinner"></div>
             <div className="loading-text">
-              ระบบกำลังเพิ่มบ่อ<span className="loading-dots"></span>
+              กำลังโหลด<span className="loading-dots"></span>
             </div>
           </div>
         </div>
