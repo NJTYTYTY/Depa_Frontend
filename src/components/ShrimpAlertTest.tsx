@@ -4,8 +4,8 @@ import { useState } from 'react';
 import { useSendShrimpAlert } from '@/hooks/use-shrimp-alert';
 
 export default function ShrimpAlertTest() {
-  const [imageUrl, setImageUrl] = useState('https://example.com/shrimp-floating.jpg');
-  const [targetUrl, setTargetUrl] = useState('https://yourapp.com/pond-details/1');
+  const [imageUrl, setImageUrl] = useState('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTIM0syGxE_4zEiuWSroBXGlfRIcdIXR97v2Q&s');
+  const [targetUrl, setTargetUrl] = useState('/ponds/1');
   const [userId, setUserId] = useState(1);
   const [customBody, setCustomBody] = useState('ตรวจพบกุ้งลอยบนผิวน้ำ ควรตรวจสอบทันที');
   
@@ -64,7 +64,7 @@ export default function ShrimpAlertTest() {
             value={targetUrl}
             onChange={(e) => setTargetUrl(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="https://yourapp.com/pond-details/1"
+            placeholder="/ponds/1"
           />
         </div>
 

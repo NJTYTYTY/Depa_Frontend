@@ -41,7 +41,7 @@ self.addEventListener("push", (event) => {
         body: data.body || "คุณได้รับการแจ้งเตือนใหม่",
         icon: data.icon || "/icons/icon-192x192.png",
         badge: data.badge || "/icons/icon-72x72.png",
-        image: data.image,
+        image: data.image || undefined,  // แสดงรูปภาพใน notification
         data: {
           ...data.data,
           url: data.url,  // เก็บ URL ไว้ใน data object
