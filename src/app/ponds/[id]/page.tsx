@@ -7,13 +7,18 @@ import { useLatestSensorData } from '@/hooks/use-readings'
 import { useBatchData } from '@/hooks/use-batch-data'
 import { useAuth } from '@/providers/auth-provider'
 import { apiClient } from '@/lib/api-client'
+import AlertBadge from '@/components/AlertBadge'
+import AlertPopup from '@/components/AlertPopup'
 
 export default function PondDetailPage() {
   const router = useRouter()
   const params = useParams()
   const pondId = params.id as string
   const { data: ponds } = usePonds()
-  const { accessToken } = useAuth()
+  const { accessToken, user } = useAuth()
+  
+  // Alert state
+  const [showAlertPopup, setShowAlertPopup] = useState(false)
   
   // Find the current pond
   const pond = ponds?.find(p => p.id === pondId)
@@ -339,6 +344,18 @@ export default function PondDetailPage() {
               <h1 className="font-bold text-lg leading-6 text-[#1c170d] text-center m-0">
                 {pond?.name || `บ่อที่ ${pondId}`}
               </h1>
+              {/* Alert Badge - อยู่ข้างๆ h1 */}
+              {user && (
+                <div className="ml-3">
+                  <AlertBadge
+                    pondId={parseInt(pondId)}
+                    userId={Number(user.id)}
+                    onClick={() => setShowAlertPopup(true)}
+                    size="md"
+                    showCount={true}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -597,6 +614,21 @@ export default function PondDetailPage() {
             </div>
           </div>
         </div>
+        
+        {/* Alert Popup */}
+        {user && (
+          <AlertPopup
+            isOpen={showAlertPopup}
+            onClose={() => setShowAlertPopup(false)}
+            pondId={parseInt(pondId)}
+            userId={Number(user.id)}
+            onMarkAsRead={() => {
+              // Refresh alert badge by closing and reopening
+              setShowAlertPopup(false)
+              setTimeout(() => setShowAlertPopup(true), 100)
+            }}
+          />
+        )}
     </div>
   )
 }

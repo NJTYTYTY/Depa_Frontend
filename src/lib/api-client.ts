@@ -610,6 +610,121 @@ class ApiClient {
       method: 'GET',
     })
   }
+
+  // Alert methods
+  async createAlert(alertData: any, token: string): Promise<ApiResponse<any>> {
+    return this.request<any>('/api/v1/alerts/create', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(alertData),
+    })
+  }
+
+  async getUserAlerts(userId: number, token: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/api/v1/alerts/user/${userId}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    })
+  }
+
+  async getPondAlerts(pondId: number, token: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/api/v1/alerts/pond/${pondId}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    })
+  }
+
+  async getUserUnreadAlerts(userId: number, token: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/api/v1/alerts/user/${userId}/unread`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    })
+  }
+
+  async getPondUnreadAlerts(pondId: number, token: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/api/v1/alerts/pond/${pondId}/unread`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    })
+  }
+
+  async markAlertAsRead(alertId: string, token: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/api/v1/alerts/${alertId}/read`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    })
+  }
+
+  async markAlertAsUnread(alertId: string, token: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/api/v1/alerts/${alertId}/unread`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    })
+  }
+
+  async getUserAlertStats(userId: number, token: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/api/v1/alerts/user/${userId}/stats`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    })
+  }
+
+  async getPondBadgeCount(pondId: number, token: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/api/v1/alerts/pond/${pondId}/badge-count`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    })
+  }
+
+  async deleteAlert(alertId: string, token: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/api/v1/alerts/${alertId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    })
+  }
+
+  async sendAlertNotification(alertData: any, token: string): Promise<ApiResponse<any>> {
+    return this.request<any>('/api/v1/push/send-alert', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(alertData),
+    })
+  }
+
+  async sendPondAlertNotification(alertData: any, token: string): Promise<ApiResponse<any>> {
+    return this.request<any>('/api/v1/push/send-pond-alert', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(alertData),
+    })
+  }
 }
 
 // Export singleton instance

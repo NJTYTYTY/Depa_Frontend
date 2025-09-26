@@ -4,12 +4,15 @@ import { useRouter } from 'next/navigation'
 import { usePonds, useDeletePond } from '@/hooks/use-ponds'
 import { useLogout } from '@/hooks/use-auth'
 import PushNotificationPermission from '@/components/PushNotificationPermission'
+import AlertBadge from '@/components/AlertBadge'
+import { useAuth } from '@/providers/auth-provider'
 
 export default function ShrimpPondsPage() {
   const router = useRouter()
   const { data: ponds, isLoading, error } = usePonds()
   const deletePondMutation = useDeletePond()
   const logoutMutation = useLogout()
+  const { user } = useAuth()
 
   const addPond = () => {
     router.push('/ponds/add')
@@ -112,7 +115,18 @@ export default function ShrimpPondsPage() {
               <div key={pond.id} className="pond-item">
                 <div className="pond-content" onClick={() => selectPond(pond.id)}>
                   <div className="pond-info">
-                    <h3 className="pond-title">{pond.name}</h3>
+                    <div className="flex items-center justify-between">
+                      <h3 className="pond-title">{pond.name}</h3>
+                      {/* Alert Badge */}
+                      {user && (
+                        <AlertBadge
+                          pondId={parseInt(pond.id)}
+                          userId={Number(user.id)}
+                          size="sm"
+                          showCount={true}
+                        />
+                      )}
+                    </div>
                     <div className="pond-details">
                       <div className="detail-row">
                         <span className="detail-label">ขนาดบ่อ:</span>
