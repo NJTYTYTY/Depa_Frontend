@@ -34,6 +34,9 @@ self.addEventListener("push", (event) => {
       const data = event.data.json();
       console.log("Push data:", data);
       
+      // สร้าง unique tag เพื่อให้ notification ใหม่ไม่แทนที่อันเก่า
+      const uniqueTag = data.tag ? `${data.tag}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}` : `shrimp-sense-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      
       const options = {
         body: data.body || "คุณได้รับการแจ้งเตือนใหม่",
         icon: data.icon || "/icons/icon-192x192.png",
@@ -41,9 +44,11 @@ self.addEventListener("push", (event) => {
         image: data.image,
         data: {
           ...data.data,
-          url: data.url  // เก็บ URL ไว้ใน data object
+          url: data.url,  // เก็บ URL ไว้ใน data object
+          originalTag: data.tag,  // เก็บ original tag ไว้
+          timestamp: Date.now()
         },
-        tag: data.tag || "shrimp-sense-notification",
+        tag: uniqueTag,  // ใช้ unique tag
         requireInteraction: data.requireInteraction || false,
         silent: data.silent || false,
         vibrate: data.vibrate || [200, 100, 200],
@@ -68,23 +73,25 @@ self.addEventListener("push", (event) => {
       console.error("Error parsing push data:", error);
       
       // Fallback notification
+      const fallbackTag = `shrimp-sense-fallback-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       event.waitUntil(
         self.registration.showNotification("Smart Shrimp Farm", {
           body: "คุณได้รับการแจ้งเตือนใหม่",
           icon: "/icons/icon-192x192.png",
           badge: "/icons/icon-72x72.png",
-          tag: "shrimp-sense-notification"
+          tag: fallbackTag
         })
       );
     }
   } else {
     // No data, show default notification
+    const defaultTag = `shrimp-sense-default-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     event.waitUntil(
       self.registration.showNotification("ShrimpSense", {
         body: "คุณได้รับการแจ้งเตือนใหม่",
         icon: "/icons/icon-192x192.png",
         badge: "/icons/icon-72x72.png",
-        tag: "shrimp-sense-notification"
+        tag: defaultTag
       })
     );
   }
