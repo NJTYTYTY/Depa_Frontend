@@ -148,17 +148,17 @@ export default function PondDetailPage() {
           } else if (backendKey === 'kungOnWaterPicture') {
             // Store image URL for shrimp on water surface - หลัก
             if (!newSensorData.shrimpSurface) {
-              newSensorData.shrimpSurface = { value: 'รูปกุ้งบนผิวน้ำ', status: 'info', timestamp: String(latestData.data.timestamp) || null }
+              newSensorData.shrimpSurface = { value: 'รูปกุ้งบนผิวน้ำ', status: 'info', timestamp: data.timestamp || null }
             }
             newSensorData.shrimpSurface.imageUrl = String(data.value)
-            newSensorData.shrimpSurface.timestamp = String(latestData.data.timestamp) || null
+            newSensorData.shrimpSurface.timestamp = data.timestamp || null
           } else if (backendKey === 'PicKungOnWater') {
             // Store image URL for shrimp on water surface (alternative name)
             if (!newSensorData.shrimpSurface) {
-              newSensorData.shrimpSurface = { value: 'รูปกุ้งบนผิวน้ำ', status: 'info', timestamp: String(latestData.data.timestamp) || null }
+              newSensorData.shrimpSurface = { value: 'รูปกุ้งบนผิวน้ำ', status: 'info', timestamp: data.timestamp || null }
             }
             newSensorData.shrimpSurface.imageUrl = String(data.value)
-            newSensorData.shrimpSurface.timestamp = String(latestData.data.timestamp) || null
+            newSensorData.shrimpSurface.timestamp = data.timestamp || null
           } else {
             // Store regular sensor data
             newSensorData[frontendKey] = {
@@ -211,17 +211,17 @@ export default function PondDetailPage() {
             } else if (batchKey === 'foodPicture') {
               // Store image URL for food
               if (!newSensorData.food) {
-                newSensorData.food = { value: 'รูปอาหารบนยอ', status: 'info', timestamp: String(latestBatch.timestamp) || null }
+                newSensorData.food = { value: 'รูปอาหารบนยอ', status: 'info', timestamp: data.timestamp || latestBatch.timestamp || null }
               }
               newSensorData.food.imageUrl = String(data.value || data)
-              newSensorData.food.timestamp = String(latestBatch.timestamp) || null
+              newSensorData.food.timestamp = data.timestamp || latestBatch.timestamp || null
             } else if (batchKey === 'kungDinPicture') {
               // Store video URL for shrimp movement
               if (!newSensorData.shrimpVideo) {
-                newSensorData.shrimpVideo = { value: 'วิดีโอกุ้งดิ้น', status: 'info', timestamp: String(latestBatch.timestamp) || null }
+                newSensorData.shrimpVideo = { value: 'วิดีโอกุ้งดิ้น', status: 'info', timestamp: data.timestamp || latestBatch.timestamp || null }
               }
               newSensorData.shrimpVideo.imageUrl = String(data.value || data)
-              newSensorData.shrimpVideo.timestamp = String(latestBatch.timestamp) || null
+              newSensorData.shrimpVideo.timestamp = data.timestamp || latestBatch.timestamp || null
             } else {
               // Store regular sensor data
               const value = data.value !== undefined ? data.value : data
