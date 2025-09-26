@@ -148,15 +148,17 @@ export default function PondDetailPage() {
           } else if (backendKey === 'kungOnWaterPicture') {
             // Store image URL for shrimp on water surface - หลัก
             if (!newSensorData.shrimpSurface) {
-              newSensorData.shrimpSurface = { value: 'รูปกุ้งบนผิวน้ำ', status: 'info', timestamp: null }
+              newSensorData.shrimpSurface = { value: 'รูปกุ้งบนผิวน้ำ', status: 'info', timestamp: String(latestData.data.timestamp) || null }
             }
-            newSensorData.shrimpSurface.imageUrl = data.value
+            newSensorData.shrimpSurface.imageUrl = String(data.value)
+            newSensorData.shrimpSurface.timestamp = String(latestData.data.timestamp) || null
           } else if (backendKey === 'PicKungOnWater') {
             // Store image URL for shrimp on water surface (alternative name)
             if (!newSensorData.shrimpSurface) {
-              newSensorData.shrimpSurface = { value: 'รูปกุ้งบนผิวน้ำ', status: 'info', timestamp: null }
+              newSensorData.shrimpSurface = { value: 'รูปกุ้งบนผิวน้ำ', status: 'info', timestamp: String(latestData.data.timestamp) || null }
             }
-            newSensorData.shrimpSurface.imageUrl = data.value
+            newSensorData.shrimpSurface.imageUrl = String(data.value)
+            newSensorData.shrimpSurface.timestamp = String(latestData.data.timestamp) || null
           } else {
             // Store regular sensor data
             newSensorData[frontendKey] = {
@@ -209,15 +211,17 @@ export default function PondDetailPage() {
             } else if (batchKey === 'foodPicture') {
               // Store image URL for food
               if (!newSensorData.food) {
-                newSensorData.food = { value: 'รูปอาหารบนยอ', status: 'info', timestamp: null }
+                newSensorData.food = { value: 'รูปอาหารบนยอ', status: 'info', timestamp: String(latestBatch.timestamp) || null }
               }
-              newSensorData.food.imageUrl = data.value || data
+              newSensorData.food.imageUrl = String(data.value || data)
+              newSensorData.food.timestamp = String(latestBatch.timestamp) || null
             } else if (batchKey === 'kungDinPicture') {
               // Store video URL for shrimp movement
               if (!newSensorData.shrimpVideo) {
-                newSensorData.shrimpVideo = { value: 'วิดีโอกุ้งดิ้น', status: 'info', timestamp: null }
+                newSensorData.shrimpVideo = { value: 'วิดีโอกุ้งดิ้น', status: 'info', timestamp: String(latestBatch.timestamp) || null }
               }
-              newSensorData.shrimpVideo.imageUrl = data.value || data
+              newSensorData.shrimpVideo.imageUrl = String(data.value || data)
+              newSensorData.shrimpVideo.timestamp = String(latestBatch.timestamp) || null
             } else {
               // Store regular sensor data
               const value = data.value !== undefined ? data.value : data
@@ -447,10 +451,15 @@ export default function PondDetailPage() {
              {/* Shrimp on Water Surface - Image Only */}
              <div className="bg-yellow-50 rounded-2xl p-5 border-2 border-[#f2c245] shadow-lg">
               <div>
-                 <div className="flex items-center justify-between">
+                 <div className="flex items-center justify-between mb-3">
                    <h3 className="font-semibold text-lg text-[#1c170d] m-0">รูปกุ้งบนผิวน้ำ</h3>
                    <button className="bg-[#f2c245] border-none rounded-2xl px-4 py-2 font-semibold text-sm text-[#1c170d] cursor-pointer transition-colors hover:bg-[#e6b63d] flex-shrink-0 ml-3 w-32 text-center" onClick={() => viewImage('shrimp_surface')}>กดเพื่อดูรูป</button>
                  </div>
+                 {sensorData.shrimpSurface?.timestamp && (
+                   <div className="text-xs text-gray-500">
+                     อัปเดตล่าสุด: {new Date(sensorData.shrimpSurface.timestamp).toLocaleString('th-TH')}
+                   </div>
+                 )}
               </div>
             </div>
           </div>
@@ -488,30 +497,45 @@ export default function PondDetailPage() {
              {/* Shrimp Size Image Card */}
              <div className="bg-yellow-50 rounded-2xl p-5 border-2 border-[#f2c245] shadow-lg">
               <div>
-                 <div className="flex items-center justify-between">
+                 <div className="flex items-center justify-between mb-3">
                    <h3 className="font-semibold text-lg text-[#1c170d] m-0">ขนาดกุ้ง</h3>
                    <button className="bg-[#f2c245] border-none rounded-2xl px-4 py-2 font-semibold text-sm text-[#1c170d] cursor-pointer transition-colors hover:bg-[#e6b63d] flex-shrink-0 ml-3 w-32 text-center" onClick={() => viewImage('shrimp')}>กดเพื่อดูรูป</button>
                  </div>
+                 {sensorData.shrimpSize?.timestamp && (
+                   <div className="text-xs text-gray-500">
+                     อัปเดตล่าสุด: {new Date(sensorData.shrimpSize.timestamp).toLocaleString('th-TH')}
+                   </div>
+                 )}
               </div>
             </div>
 
              {/* Food on Raft Image Card */}
              <div className="bg-yellow-50 rounded-2xl p-5 border-2 border-[#f2c245] shadow-lg">
               <div>
-                 <div className="flex items-center justify-between">
+                 <div className="flex items-center justify-between mb-3">
                    <h3 className="font-semibold text-lg text-[#1c170d] m-0">รูปอาหารบนยอ</h3>
                    <button className="bg-[#f2c245] border-none rounded-2xl px-4 py-2 font-semibold text-sm text-[#1c170d] cursor-pointer transition-colors hover:bg-[#e6b63d] flex-shrink-0 ml-3 w-32 text-center" onClick={() => viewImage('food')}>กดเพื่อดูรูป</button>
                  </div>
+                 {sensorData.food?.timestamp && (
+                   <div className="text-xs text-gray-500">
+                     อัปเดตล่าสุด: {new Date(sensorData.food.timestamp).toLocaleString('th-TH')}
+                   </div>
+                 )}
               </div>
             </div>
 
              {/* Shrimp Movement Video Card */}
              <div className="bg-yellow-50 rounded-2xl p-5 border-2 border-[#f2c245] shadow-lg">
             <div>
-                 <div className="flex items-center justify-between">
+                 <div className="flex items-center justify-between mb-3">
                    <h3 className="font-semibold text-lg text-[#1c170d] m-0">วิดีโอกุ้งดิ้น</h3>
                    <button className="bg-[#f2c245] border-none rounded-2xl px-4 py-2 font-semibold text-sm text-[#1c170d] cursor-pointer transition-colors hover:bg-[#e6b63d] flex-shrink-0 ml-3 w-32 text-center" onClick={() => viewImage('shrimp_video')}>กดเพื่อดูวิดีโอ</button>
                  </div>
+                 {sensorData.shrimpVideo?.timestamp && (
+                   <div className="text-xs text-gray-500">
+                     อัปเดตล่าสุด: {new Date(sensorData.shrimpVideo.timestamp).toLocaleString('th-TH')}
+                   </div>
+                 )}
               </div>
             </div>
           </div>
