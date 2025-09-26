@@ -58,13 +58,17 @@ const AlertPopup: React.FC<AlertPopupProps> = ({
   const handleMarkAsRead = async () => {
     if (!selectedAlertId) return;
     
+    console.log('🔄 AlertPopup: handleMarkAsRead called for alertId:', selectedAlertId);
+    
     try {
       const result = await markAlertAsRead(selectedAlertId);
+      console.log('🔄 AlertPopup: markAlertAsRead result:', result);
       if (result.success) {
         // Remove from local state
         setAlerts(prev => prev.filter(alert => alert.id !== selectedAlertId));
         setSelectedAlertId(null);
         
+        console.log('🔄 AlertPopup: Calling onMarkAsRead callback');
         // Call parent callback
         onMarkAsRead?.();
         

@@ -13,6 +13,7 @@ interface AlertBadgeProps {
   size?: 'sm' | 'md' | 'lg';
   showCount?: boolean;
   onClick?: () => void;
+  refreshTrigger?: number; // เพิ่ม prop สำหรับ trigger refresh
 }
 
 const AlertBadge: React.FC<AlertBadgeProps> = ({
@@ -21,7 +22,8 @@ const AlertBadge: React.FC<AlertBadgeProps> = ({
   className = '',
   size = 'md',
   showCount = true,
-  onClick
+  onClick,
+  refreshTrigger
 }) => {
   const { getPondBadgeCount, isLoading } = useAlerts();
   const [badgeCount, setBadgeCount] = useState(0);
@@ -29,11 +31,14 @@ const AlertBadge: React.FC<AlertBadgeProps> = ({
 
   useEffect(() => {
     const fetchBadgeCount = async () => {
+      console.log('🔄 AlertBadge: Fetching badge count for pondId:', pondId, 'refreshTrigger:', refreshTrigger);
       try {
         const result = await getPondBadgeCount(pondId);
+        console.log('🔄 AlertBadge: Badge count result:', result);
         if (result && result.success) {
           setBadgeCount(result.unread_count || 0);
           setHasAlerts(result.has_alerts || false);
+          console.log('🔄 AlertBadge: Updated badge count:', result.unread_count, 'has alerts:', result.has_alerts);
         }
       } catch (error) {
         console.error('Error fetching badge count:', error);
@@ -52,7 +57,7 @@ const AlertBadge: React.FC<AlertBadgeProps> = ({
       
       return () => clearInterval(interval);
     }
-  }, [pondId, getPondBadgeCount]);
+  }, [pondId, refreshTrigger]); // ลบ getPondBadgeCount ออกจาก dependency array เพื่อป้องกัน infinite loop
 
   // Size classes
   const sizeClasses = {

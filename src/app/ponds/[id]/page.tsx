@@ -19,6 +19,7 @@ export default function PondDetailPage() {
   
   // Alert state
   const [showAlertPopup, setShowAlertPopup] = useState(false)
+  const [alertRefreshTrigger, setAlertRefreshTrigger] = useState(0)
   
   // Find the current pond
   const pond = ponds?.find(p => p.id === pondId)
@@ -348,11 +349,13 @@ export default function PondDetailPage() {
               {user && (
                 <div className="ml-3">
                   <AlertBadge
+                    key={`alert-badge-${alertRefreshTrigger}`}
                     pondId={parseInt(pondId)}
                     userId={Number(user.id)}
                     onClick={() => setShowAlertPopup(true)}
                     size="md"
                     showCount={true}
+                    refreshTrigger={alertRefreshTrigger}
                   />
                 </div>
               )}
@@ -623,9 +626,13 @@ export default function PondDetailPage() {
             pondId={parseInt(pondId)}
             userId={Number(user.id)}
             onMarkAsRead={() => {
-              // Refresh alert badge by closing and reopening
-              setShowAlertPopup(false)
-              setTimeout(() => setShowAlertPopup(true), 100)
+              // Trigger refresh of alert badge
+              console.log('🔄 Page: onMarkAsRead called, updating refreshTrigger');
+              setAlertRefreshTrigger(prev => {
+                const newValue = prev + 1;
+                console.log('🔄 Page: refreshTrigger updated from', prev, 'to', newValue);
+                return newValue;
+              });
             }}
           />
         )}
