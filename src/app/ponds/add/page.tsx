@@ -34,6 +34,7 @@ export default function AddPondPage() {
     length: ''
   })
   const [errors, setErrors] = useState<Partial<PondFormData>>({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
   
   // Debug logging removed for production
 
@@ -90,9 +91,16 @@ export default function AddPondPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
+    // ป้องกันการกดซ้ำ
+    if (isSubmitting) {
+      return
+    }
+    
     if (!validateForm()) {
       return
     }
+
+    setIsSubmitting(true)
 
     try {
       // สร้างชื่อบ่อตามลำดับ
@@ -118,6 +126,8 @@ export default function AddPondPage() {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'เกิดข้อผิดพลาดในการเพิ่มบ่อ'
       alert(errorMessage)
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -238,12 +248,28 @@ export default function AddPondPage() {
 
         {/* Add Button */}
         <div className="button-section">
-          <button className="add-button" onClick={handleSubmit}>
-            เพิ่มบ่อ
+          <button 
+            className={`add-button ${isSubmitting ? 'disabled' : ''}`} 
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'กำลังเพิ่มบ่อ...' : 'เพิ่มบ่อ'}
           </button>
           <div className="spacer"></div>
         </div>
       </div>
+
+      {/* Loading Popup */}
+      {isSubmitting && (
+        <div className="loading-popup">
+          <div className="popup-content">
+            <div className="loading-spinner"></div>
+            <div className="loading-text">
+              ระบบกำลังเพิ่มบ่อ<span className="loading-dots"></span>
+            </div>
+          </div>
+        </div>
+      )}
 
       <style jsx>{`
         * {
@@ -516,8 +542,94 @@ export default function AddPondPage() {
           background-color: #d9a835;
         }
 
+        .add-button.disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+          background-color: #d9a835;
+        }
+
+        .add-button.disabled:hover {
+          background-color: #d9a835;
+          transform: none;
+        }
+
         .spacer {
           display: none;
+        }
+
+        /* Loading Popup Styles */
+        .loading-popup {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: rgba(0, 0, 0, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 9999;
+          backdrop-filter: blur(4px);
+        }
+
+        .popup-content {
+          background-color: #fcfaf7;
+          border-radius: 20px;
+          padding: 40px 30px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 20px;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+          max-width: 300px;
+          width: 90%;
+          text-align: center;
+        }
+
+        .loading-spinner {
+          width: 40px;
+          height: 40px;
+          border: 4px solid #f2f0e8;
+          border-top: 4px solid #f2c245;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+
+        .loading-text {
+          font-family: 'Inter', 'Noto Sans Thai', sans-serif;
+          font-weight: 600;
+          font-size: 16px;
+          line-height: 24px;
+          color: #1a170f;
+          text-align: center;
+        }
+
+        .loading-dots {
+          display: inline-block;
+          animation: loadingDots 1.5s infinite;
+        }
+
+        .loading-dots::after {
+          content: "";
+          animation: loadingDots 1.5s infinite;
+        }
+
+        @keyframes loadingDots {
+          0%, 20% {
+            content: ".";
+          }
+          40% {
+            content: "..";
+          }
+          60%, 100% {
+            content: "...";
+          }
+        }
+
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
         }
 
         /* Date Input Styling */
