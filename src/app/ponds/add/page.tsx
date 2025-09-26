@@ -13,6 +13,11 @@ interface PondFormData {
   shrimp_count: string
 }
 
+interface DimensionsInput {
+  width: string
+  length: string
+}
+
 export default function AddPondPage() {
   const router = useRouter()
   const createPondMutation = useCreatePond()
@@ -24,6 +29,10 @@ export default function AddPondPage() {
     depth: '',
     shrimp_count: ''
   })
+  const [dimensionsInput, setDimensionsInput] = useState<DimensionsInput>({
+    width: '',
+    length: ''
+  })
   const [errors, setErrors] = useState<Partial<PondFormData>>({})
   
   // Debug logging removed for production
@@ -33,6 +42,35 @@ export default function AddPondPage() {
     // Clear error when user starts typing
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: undefined }))
+    }
+  }
+
+  const handleDimensionsChange = (field: 'width' | 'length', value: string) => {
+    // รับเฉพาะตัวเลข
+    const numericValue = value.replace(/[^0-9.]/g, '')
+    
+    setDimensionsInput(prev => {
+      const newInput = { ...prev, [field]: numericValue }
+      
+      // อัปเดต dimensions string เมื่อมีข้อมูลทั้งสองค่า
+      if (newInput.width && newInput.length) {
+        const dimensionsString = `${newInput.width} x ${newInput.length}`
+        setFormData(prevForm => ({ ...prevForm, dimensions: dimensionsString }))
+      } else if (newInput.width || newInput.length) {
+        // ถ้ามีแค่ค่าเดียว ให้เก็บไว้ใน dimensions
+        const partialString = newInput.width ? `${newInput.width} x` : `x ${newInput.length}`
+        setFormData(prevForm => ({ ...prevForm, dimensions: partialString }))
+      } else {
+        // ถ้าไม่มีข้อมูลเลย ให้ล้าง dimensions
+        setFormData(prevForm => ({ ...prevForm, dimensions: '' }))
+      }
+      
+      return newInput
+    })
+    
+    // Clear error when user starts typing
+    if (errors.dimensions) {
+      setErrors(prev => ({ ...prev, dimensions: undefined }))
     }
   }
 
@@ -142,14 +180,27 @@ export default function AddPondPage() {
             {/* Dimensions Field */}
             <div className="input-group">
               <div className="input-field">
-                <input
-                  type="text"
-                  className={`text-input ${errors.dimensions ? 'error' : ''}`}
-                  placeholder="ขนาดบ่อ กว้าง x ยาว"
-                  value={formData.dimensions}
-                  onChange={(e) => handleInputChange('dimensions', e.target.value)}
-                  required
-                />
+                <div className={`dimensions-input-wrapper ${errors.dimensions ? 'error' : ''} ${!(dimensionsInput.width || dimensionsInput.length) ? 'no-data' : ''}`}>
+                  <input
+                    type="text"
+                    className="dimensions-input"
+                    placeholder="ขนาดบ่อ กว้าง x ยาว"
+                    value={dimensionsInput.width}
+                    onChange={(e) => handleDimensionsChange('width', e.target.value)}
+                    required
+                  />
+                  {(dimensionsInput.width || dimensionsInput.length) && (
+                    <span className="dimensions-separator">x</span>
+                  )}
+                  <input
+                    type="text"
+                    className="dimensions-input"
+                    placeholder=""
+                    value={dimensionsInput.length}
+                    onChange={(e) => handleDimensionsChange('length', e.target.value)}
+                    required
+                  />
+                </div>
               </div>
             </div>
 
@@ -160,7 +211,7 @@ export default function AddPondPage() {
                   type="number"
                   step="0.1"
                   className={`text-input ${errors.depth ? 'error' : ''}`}
-                  placeholder="ความลึกของบ่อ"
+                  placeholder="ความลึกของบ่อ (เมตร)"
                   value={formData.depth}
                   onChange={(e) => handleInputChange('depth', e.target.value)}
                   required
@@ -335,6 +386,76 @@ export default function AddPondPage() {
           outline: none;
         }
 
+        /* Dimensions Input Styles */
+        .dimensions-input-wrapper {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          background-color: #f2f0e8;
+          border-radius: 12px;
+          padding: 16px;
+          height: 56px;
+          width: 100%;
+          border: none;
+          flex: 1;
+          min-width: 160px;
+        }
+
+        .dimensions-input {
+          flex: 1;
+          background-color: transparent;
+          border: none;
+          outline: none;
+          font-family: 'Inter', 'Noto Sans Thai', sans-serif;
+          font-weight: 400;
+          font-size: 16px;
+          line-height: 24px;
+          color: #1a170f;
+          text-align: center;
+          min-width: 0;
+        }
+
+        .dimensions-input:first-child::placeholder {
+          color: #8f8057;
+          font-weight: 400;
+          text-align: left;
+        }
+
+        .dimensions-input:last-child::placeholder {
+          color: transparent;
+        }
+
+        /* เมื่อยังไม่มีข้อมูล ให้ input แรกขยายเต็มความกว้าง */
+        .dimensions-input-wrapper.no-data .dimensions-input:first-child {
+          flex: 1;
+        }
+
+        .dimensions-input-wrapper.no-data .dimensions-input:last-child {
+          flex: 0;
+          width: 0;
+          overflow: hidden;
+        }
+
+
+        .dimensions-separator {
+          font-family: 'Inter', 'Noto Sans Thai', sans-serif;
+          font-weight: 500;
+          font-size: 16px;
+          line-height: 24px;
+          color: #8f8057;
+          flex-shrink: 0;
+        }
+
+
+        .dimensions-input-wrapper:focus-within {
+          background-color: #efeae0;
+          box-shadow: 0 0 0 2px rgba(242, 194, 69, 0.3);
+        }
+
+        .dimensions-input-wrapper.error {
+          border: 2px solid #d4183d;
+        }
+
         .input-field .date-input.error,
         .input-field .text-input.error {
           border: 2px solid #d4183d;
@@ -446,6 +567,15 @@ export default function AddPondPage() {
           .button-section {
             padding: 0 12px 16px 12px;
           }
+
+          .dimensions-input-wrapper {
+            gap: 8px;
+            padding: 12px;
+          }
+
+          .dimensions-separator {
+            font-size: 14px;
+          }
         }
 
         @media (max-width: 480px) {
@@ -467,6 +597,23 @@ export default function AddPondPage() {
           
           .button-section {
             padding: 0 8px 12px 8px;
+          }
+
+          .dimensions-input-wrapper {
+            gap: 6px;
+            padding: 10px;
+          }
+
+          .dimensions-input {
+            font-size: 14px;
+          }
+
+          .dimensions-separator {
+            font-size: 12px;
+          }
+
+          .dimensions-label {
+            font-size: 12px;
           }
         }
 
