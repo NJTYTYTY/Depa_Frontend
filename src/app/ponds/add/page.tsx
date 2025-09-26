@@ -265,7 +265,7 @@ export default function AddPondPage() {
 
         .main-frame {
           background-color: #fcfaf7;
-          min-height: 844px;
+          height: 100vh;
           position: relative;
           flex-shrink: 0;
           width: 100%;
@@ -343,7 +343,8 @@ export default function AddPondPage() {
           width: 100%;
           gap: 0;
           align-items: center;
-          padding: 20px 16px;
+          padding: 16px;
+          overflow-y: auto;
         }
 
         .input-group {
@@ -351,7 +352,7 @@ export default function AddPondPage() {
           position: relative;
           flex-shrink: 0;
           width: 100%;
-          margin-bottom: 16px;
+          margin-bottom: 12px;
         }
 
         .input-field {
@@ -482,7 +483,8 @@ export default function AddPondPage() {
           display: flex;
           flex-direction: column;
           align-items: center;
-          padding: 0 16px 20px 16px;
+          padding: 16px;
+          background-color: #fcfaf7;
         }
 
         .add-button {
@@ -515,11 +517,7 @@ export default function AddPondPage() {
         }
 
         .spacer {
-          background-color: #fcfaf7;
-          height: 20px;
-          position: relative;
-          flex-shrink: 0;
-          width: 100%;
+          display: none;
         }
 
         /* Date Input Styling */
@@ -558,14 +556,15 @@ export default function AddPondPage() {
         @media (max-width: 768px) {
           .input-group {
             max-width: 100%;
+            margin-bottom: 10px;
           }
           
           .form-fields {
-            padding: 16px 12px;
+            padding: 12px;
           }
           
           .button-section {
-            padding: 0 12px 16px 12px;
+            padding: 12px;
           }
 
           .dimensions-input-wrapper {
@@ -588,15 +587,19 @@ export default function AddPondPage() {
           }
           
           .input-field {
-            padding: 12px;
+            padding: 8px;
           }
           
           .form-fields {
-            padding: 12px 8px;
+            padding: 8px;
           }
           
           .button-section {
-            padding: 0 8px 12px 8px;
+            padding: 8px;
+          }
+
+          .input-group {
+            margin-bottom: 8px;
           }
 
           .dimensions-input-wrapper {
@@ -609,10 +612,6 @@ export default function AddPondPage() {
           }
 
           .dimensions-separator {
-            font-size: 12px;
-          }
-
-          .dimensions-label {
             font-size: 12px;
           }
         }
