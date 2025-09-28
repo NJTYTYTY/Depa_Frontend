@@ -17,7 +17,7 @@ const SensorGraph: React.FC<SensorGraphProps> = ({
 }) => {
   // Transform data for recharts
   const chartData = data.data_points.map((point, index) => {
-    // Parse timestamp as UTC to avoid timezone conversion issues
+    // Parse timestamp directly without timezone conversion
     const date = new Date(point.timestamp)
     const isShrimpSize = data.sensor_type?.includes('Shrimp Size')
     
@@ -27,32 +27,36 @@ const SensorGraph: React.FC<SensorGraphProps> = ({
     // For date display, only show date for the first point of each day
     let timeLabel = ''
     if (showDateOnly) {
-      // Check if this is the first point of a new day using UTC methods
+      // Check if this is the first point of a new day
       const prevDate = index > 0 ? new Date(data.data_points[index - 1].timestamp) : null
       const isFirstPointOfDay = index === 0 || 
         (prevDate && (
-          prevDate.getUTCFullYear() !== date.getUTCFullYear() ||
-          prevDate.getUTCMonth() !== date.getUTCMonth() ||
-          prevDate.getUTCDate() !== date.getUTCDate()
+          prevDate.getFullYear() !== date.getFullYear() ||
+          prevDate.getMonth() !== date.getMonth() ||
+          prevDate.getDate() !== date.getDate()
         ))
       
       // Only show date if it's the first point of the day
       timeLabel = isFirstPointOfDay 
-        ? `${date.getUTCDate()} ${date.toLocaleDateString('th-TH', { month: 'short' })}`
+        ? `${date.getDate()} ${date.toLocaleDateString('th-TH', { month: 'short' })}`
         : '' // Empty string for subsequent points of the same day
     } else {
-      // For 1D timeframe, show time in local timezone
-      const localDate = new Date(date.getTime() + (date.getTimezoneOffset() * 60000))
-      timeLabel = `${localDate.getHours().toString().padStart(2, '0')}:${localDate.getMinutes().toString().padStart(2, '0')}`
+      // For 1D timeframe, show time with 3-hour intervals
+      const hour = date.getHours()
+      const minute = date.getMinutes()
+      
+      // Only show time labels at 3-hour intervals (0, 3, 6, 9, 12, 15, 18, 21)
+      if (hour % 3 === 0 && minute === 0) {
+        timeLabel = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
+      } else {
+        timeLabel = '' // Empty string for other times
+      }
     }
-    
-    // Create local time for display
-    const localDate = new Date(date.getTime() + (date.getTimezoneOffset() * 60000))
     
     return {
       time: timeLabel,
       value: parseFloat(point.value.toFixed(2)), // Round to 2 decimal places
-      fullTime: `${localDate.getDate()} ${localDate.toLocaleDateString('th-TH', { month: 'long' })} ${localDate.getFullYear()} ${localDate.getHours().toString().padStart(2, '0')}:${localDate.getMinutes().toString().padStart(2, '0')}`,
+      fullTime: `${date.getDate()} ${date.toLocaleDateString('th-TH', { month: 'long' })} ${date.getFullYear()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`,
       status: point.status
     }
   })
@@ -177,10 +181,11 @@ const SensorGraph: React.FC<SensorGraphProps> = ({
               strokeWidth={3}
               fill={`url(#gradient-${data.sensor_type.replace(/\s+/g, '-').replace(/[()]/g, '').toLowerCase()})`}
               dot={(props: any) => {
-                const { cx, cy, payload } = props
+                const { cx, cy, payload, index } = props
                 const isWaitingData = payload?.value === 0.0 && payload?.status === 'gray'
                 return (
                   <Dot
+                    key={`dot-${index}`}
                     cx={cx}
                     cy={cy}
                     r={isWaitingData ? 2 : 4}

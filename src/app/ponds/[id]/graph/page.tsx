@@ -227,7 +227,10 @@ export default function GraphPage() {
             </div>
           ) : shrimpSizeData && (shrimpSizeData as any).sensor_data ? (
             <SensorGraph
-              data={(shrimpSizeData as any).sensor_data}
+              data={{
+                ...(shrimpSizeData as any).sensor_data,
+                timeframe: (shrimpSizeData as any).timeframe
+              }}
               color="#8B5CF6"
               height={200}
             />

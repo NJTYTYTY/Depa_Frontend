@@ -604,6 +604,22 @@ class ApiClient {
     return response
   }
 
+  // Shrimp size graph data
+  async getShrimpSizeGraphData(pondId: number, timeframe: string = '1D', hours: number = 24): Promise<ApiResponse<any>> {
+    const queryParams = new URLSearchParams()
+    queryParams.append('timeframe', timeframe)
+    queryParams.append('hours', hours.toString())
+    
+    const url = `/api/v1/sensors/graph-shrimpsize/${pondId}?${queryParams.toString()}`
+    
+    return this.request<any>(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+  }
+
   // Health check
   async healthCheck(): Promise<ApiResponse<{ status: string }>> {
     return this.request<{ status: string }>('/api/v1/health', {

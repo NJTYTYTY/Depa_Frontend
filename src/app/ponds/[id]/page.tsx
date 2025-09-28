@@ -309,14 +309,11 @@ export default function PondDetailPage() {
       case 'mineral1':
       case 'mineral2':
         // สำหรับ Mineral 1-2: แสดงน้ำหนักเป็นกรัม
-        return `${roundFloat(value)} กรัม`
+        return `${roundFloat(value)} กิโลกรัม`
       case 'mineral3':
       case 'mineral4':
-        // สำหรับ Mineral 3-4: แสดงข้อความตามค่า true/false
-        if (typeof value === 'string') {
-          return value.toLowerCase() === 'true' ? 'ปริมาณสารเหลือน้อย' : 'ปริมาณสารคงเหลือปกติ'
-        }
-        return value.toString()
+        // สำหรับ Mineral 3-4: แสดงน้ำหนักเป็นกรัม
+        return `${roundFloat(value)} ลิตร`
       default:
         return value.toString()
     }
