@@ -12,7 +12,6 @@ export default function ControlPage() {
   const pondId = params.id as string
   const { data: ponds } = usePonds()
   const [isLifting, setIsLifting] = useState(false)
-  const [isLiftUp, setIsLiftUp] = useState(false) // สถานะของยอ (ขึ้น/ลง)
   const [newSchedule, setNewSchedule] = useState({
     time: '06:00',
     days: [] as string[]
@@ -92,8 +91,8 @@ export default function ControlPage() {
     }
   }
 
-// ฟังก์ชันสำหรับควบคุมยอ (ขึ้น/ลง) - ส่ง POST ไปยัง backend_middle
-const handleLiftToggle = async () => {
+// ฟังก์ชันสำหรับควบคุมยอ - ส่ง POST ไปยัง backend_middle
+const handleLiftUp = async () => {
   if (isLifting) return // ป้องกันการกดซ้ำ
   
   setIsLifting(true)
@@ -104,20 +103,16 @@ const handleLiftToggle = async () => {
     // แปลง pondId เป็น string และตรวจสอบ
     const pondIdString = Array.isArray(pondId) ? pondId[0] : pondId
     
-    // กำหนด action และ endpoint ตามสถานะปัจจุบัน
-    const action = isLiftUp ? 'lift_down' : 'lift_up'
-    const endpoint = isLiftUp ? 'api/lift-down' : 'api/lift-up'
-    
     // สร้าง request body
     const requestBody = {
       pondId: pondIdString,
-      action: action,
+      action: 'lift_up',
       timestamp: new Date().toISOString()
     }
     
-    console.log(`🚀 Sending ${action} command:`, requestBody)
+    console.log('🚀 Sending lift_up command:', requestBody)
     
-    const response = await fetch(`${backendMiddleUrl}/${endpoint}`, {
+    const response = await fetch(`${backendMiddleUrl}/api/lift-up`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -127,16 +122,11 @@ const handleLiftToggle = async () => {
 
     if (response.ok) {
       const result = await response.json()
-      console.log(`✅ ${action} command sent successfully:`, result)
-      
-      // อัปเดตสถานะหลังจากส่งคำสั่งสำเร็จ
-      setIsLiftUp(!isLiftUp)
-      
-      const message = isLiftUp ? 'คำสั่งยกยอลงส่งสำเร็จ!' : 'คำสั่งยกยอขึ้นส่งสำเร็จ!'
-      alert(message)
+      console.log('✅ lift_up command sent successfully:', result)
+      alert('คำสั่งยกยอขึ้นส่งสำเร็จ!')
     } else {
       const errorData = await response.json().catch(() => ({}))
-      console.error(`❌ Failed to send ${action} command:`, response.status, errorData)
+      console.error('❌ Failed to send lift_up command:', response.status, errorData)
       alert('เกิดข้อผิดพลาดในการส่งคำสั่ง กรุณาลองใหม่อีกครั้ง')
     }
   } catch (error) {
@@ -218,29 +208,33 @@ const handleLiftToggle = async () => {
                   <p>
                     {isLifting 
                       ? 'กำลังส่งคำสั่ง...' 
-                      : isLiftUp 
-                        ? 'กดเพื่อยกยอลง' 
-                        : 'กดเพื่อยกยอขึ้น'
+                      : 'กดเพื่อยกยอขึ้น → ถ่ายรูป → ยกลง'
                     }
                   </p>
                 </div>
               </div>
-              <div 
-                className={`toggle-switch ${isLiftUp ? 'active' : ''} ${isLifting ? 'loading' : ''}`} 
-                onClick={handleLiftToggle}
+              <button 
+                className={`lift-button ${isLifting ? 'loading' : ''}`}
+                onClick={handleLiftUp}
+                disabled={isLifting}
                 style={{ 
                   cursor: isLifting ? 'not-allowed' : 'pointer',
                   opacity: isLifting ? 0.7 : 1 
                 }}
               >
-                <div className="toggle-slider">
-                  {isLifting && (
-                    <div className="loading-spinner">
-                      <div className="spinner"></div>
-                    </div>
-                  )}
-                </div>
-              </div>
+                {isLifting ? (
+                  <div className="loading-spinner">
+                    <div className="spinner"></div>
+                  </div>
+                ) : (
+                  <>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                      <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    ยกยอ
+                  </>
+                )}
+              </button>
             </div>
 
             {/* Control Item 3 */}
@@ -699,6 +693,7 @@ const handleLiftToggle = async () => {
           justify-content: space-between;
           padding: 12px 0;
           border-bottom: 1px solid #f3f4f6;
+          min-height: 60px;
         }
 
         .control-item:last-child {
@@ -1532,6 +1527,7 @@ const handleLiftToggle = async () => {
           align-items: center;
           gap: 16px;
           flex: 1;
+          height: 100%;
         }
 
         .control-icon {
@@ -1562,6 +1558,82 @@ const handleLiftToggle = async () => {
           margin: 0;
         }
 
+        /* Lift Button */
+        .lift-button {
+          background: linear-gradient(135deg, #f2c245 0%, #f59e0b 100%);
+          color: white;
+          border: none;
+          padding: 6px 12px;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 12px;
+          font-weight: 600;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 0 2px 8px rgba(242, 194, 69, 0.25);
+          position: relative;
+          overflow: hidden;
+          display: flex;
+          align-items: center;
+          gap: 0.05px;
+          min-width: 15px;
+          justify-content: center;
+          flex-shrink: 0;
+          height: 32px;
+          box-sizing: border-box;
+          align-self: center;
+        }
+
+        .lift-button::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+          transition: left 0.5s;
+        }
+
+        .lift-button:hover:not(:disabled) {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 20px rgba(242, 194, 69, 0.4);
+        }
+
+        .lift-button:hover:not(:disabled)::before {
+          left: 100%;
+        }
+
+        .lift-button:active:not(:disabled) {
+          transform: translateY(0);
+        }
+
+        .lift-button:disabled {
+          background: linear-gradient(135deg, #9CA3AF 0%, #6B7280 100%);
+          cursor: not-allowed;
+          transform: none;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .lift-button.loading {
+          background: linear-gradient(135deg, #f2c245 0%, #f59e0b 100%);
+        }
+
+        .loading-spinner {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+        }
+
+        .spinner {
+          width: 5px;
+          height: 5px;
+          border: 2px solid rgba(255, 255, 255, 0.3);
+          border-top: 2px solid white;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+
         /* Toggle Switch */
         .toggle-switch {
           width: 60px;
@@ -1572,6 +1644,8 @@ const handleLiftToggle = async () => {
           cursor: pointer;
           transition: background-color 0.3s ease;
           flex-shrink: 0;
+          align-self: center;
+          box-sizing: border-box;
         }
 
         .toggle-switch.active {
@@ -1596,22 +1670,6 @@ const handleLiftToggle = async () => {
 
         .toggle-switch.loading .toggle-slider {
           background-color: #f2c245;
-        }
-
-        .loading-spinner {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-        }
-
-        .spinner {
-          width: 12px;
-          height: 12px;
-          border: 2px solid #ffffff;
-          border-top: 2px solid transparent;
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
         }
 
         @keyframes spin {
