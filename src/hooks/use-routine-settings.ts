@@ -105,6 +105,20 @@ export const useRoutineSettings = ({ pondId, enabled = true }: UseRoutineSetting
   // Toggle enabled
   const toggleEnabled = useMutation({
     mutationFn: async (enabled: boolean) => {
+      // Send to system toggle endpoint
+      const systemResponse = await (apiClient as any).request('/api/v1/system/toggle', {
+        method: 'POST',
+        body: JSON.stringify({ action: enabled ? 'on' : 'off' }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      
+      if (systemResponse.error) {
+        throw new Error(systemResponse.error)
+      }
+      
+      // Also update routine settings locally
       const response = await (apiClient as any).request(`/api/v1/sensors/routine-settings/${pondId}/toggle`, {
         method: 'POST',
         body: JSON.stringify({ enabled }),

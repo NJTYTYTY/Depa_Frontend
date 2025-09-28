@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { usePonds } from '@/hooks/use-ponds'
 import { useRoutineSettings } from '@/hooks/use-routine-settings'
 import { useRoutineTimer } from '@/hooks/use-routine-timer'
+import { useSystemControl } from '@/hooks/use-system-control'
 
 export default function ControlPage() {
   const router = useRouter()
@@ -27,6 +28,14 @@ export default function ControlPage() {
     removeSchedule: removeScheduleMutation,
     toggleEnabled: toggleEnabledMutation
   } = useRoutineSettings({ pondId: parseInt(pondId) })
+
+  // Use system control hook
+  const { 
+    systemStatus, 
+    isEnabled: isSystemEnabled, 
+    toggle: toggleSystem, 
+    isToggling: isSystemToggling 
+  } = useSystemControl()
 
   // Use routine timer hook
   useRoutineTimer({ enabled: true })
@@ -75,6 +84,11 @@ export default function ControlPage() {
         setShowRoutineSettings(true)
       }
     }
+  }
+
+  // Handle system toggle (main automation system)
+  const handleSystemToggle = () => {
+    toggleSystem()
   }
 
   const handleDayChange = (day: string, checked: boolean) => {
@@ -273,7 +287,7 @@ const handleLiftUp = async () => {
               </div>
             </div>
 
-            {/* Control Item 5 - Routine Settings */}
+            {/* Control Item 5 - System Automation */}
             <div className="control-item">
               <div className="control-content">
                 <div className="control-icon">
@@ -282,7 +296,44 @@ const handleLiftUp = async () => {
                   </svg>
                 </div>
                 <div className="control-info">
-                  <h3>5. ตั้งเวลา Routine ยกยอ</h3>
+                  <h3>5. ระบบอัตโนมัติหลัก</h3>
+                  <p>
+                    {isSystemToggling 
+                      ? 'กำลังเปลี่ยนสถานะ...' 
+                      : isSystemEnabled 
+                        ? 'ระบบอัตโนมัติเปิดอยู่ - กำลังตรวจสอบตารางเวลา' 
+                        : 'ระบบอัตโนมัติปิดอยู่ - ไม่มีการตรวจสอบตารางเวลา'
+                    }
+                    {isSystemEnabled && systemStatus?.last_check && (
+                      <span style={{ display: 'block', marginTop: '8px', fontSize: '14px', color: '#10B981' }}>
+                        ✓ ตรวจสอบล่าสุด: {new Date(systemStatus.last_check).toLocaleString('th-TH')}
+                      </span>
+                    )}
+                  </p>
+                </div>
+              </div>
+              <div 
+                className={`toggle-switch ${isSystemEnabled ? 'active' : ''} ${isSystemToggling ? 'loading' : ''}`}
+                onClick={handleSystemToggle}
+                style={{ 
+                  cursor: isSystemToggling ? 'not-allowed' : 'pointer',
+                  opacity: isSystemToggling ? 0.7 : 1 
+                }}
+              >
+                <div className="toggle-slider"></div>
+              </div>
+            </div>
+
+            {/* Control Item 6 - Routine Settings */}
+            <div className="control-item">
+              <div className="control-content">
+                <div className="control-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="#1A170F"/>
+                  </svg>
+                </div>
+                <div className="control-info">
+                  <h3>6. ตั้งเวลา Routine ยกยอ</h3>
                   <p>กำหนดเวลายกยออัตโนมัติ (ยกขึ้น → ถ่ายรูป → ยกลง)</p>
                 </div>
               </div>
@@ -320,6 +371,27 @@ const handleLiftUp = async () => {
                     <div>
                       <h4>ตั้งค่า Routine ยกยอ</h4>
                       <p className="header-subtitle">กำหนดเวลายกยออัตโนมัติ (ยกขึ้น → ถ่ายรูป → ยกลง)</p>
+                      <div className="system-status">
+                        <span className={`status-indicator ${isSystemEnabled ? 'active' : 'inactive'}`}>
+                          {isSystemEnabled ? '🟢' : '🔴'}
+                        </span>
+                        <span className="status-text">
+                          ระบบอัตโนมัติ: {isSystemEnabled ? 'เปิด' : 'ปิด'}
+                          {systemStatus?.last_check && (
+                            <span className="last-check">
+                              (ตรวจสอบล่าสุด: {new Date(systemStatus.last_check).toLocaleTimeString('th-TH')})
+                            </span>
+                          )}
+                          {isSystemEnabled && (
+                            <span className="system-info">
+                              <br />
+                              <small style={{ color: '#10B981', fontSize: '12px' }}>
+                                ✓ ระบบกำลังทำงาน - ตรวจสอบทุก 30 วินาที
+                              </small>
+                            </span>
+                          )}
+                        </span>
+                      </div>
                     </div>
                   </div>
                   <button 
@@ -801,6 +873,46 @@ const handleLiftUp = async () => {
           font-size: 14px;
           font-weight: 500;
           line-height: 1.4;
+        }
+
+        .system-status {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-top: 8px;
+          padding: 8px 12px;
+          background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
+          border-radius: 8px;
+          border: 1px solid #E2E8F0;
+        }
+
+        .status-indicator {
+          font-size: 12px;
+          line-height: 1;
+        }
+
+        .status-indicator.active {
+          animation: pulse 2s infinite;
+        }
+
+        .status-text {
+          font-size: 12px;
+          color: #374151;
+          font-weight: 500;
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+
+        .last-check {
+          font-size: 11px;
+          color: #6B7280;
+          font-weight: 400;
+        }
+
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
         }
 
         .close-panel-btn {
