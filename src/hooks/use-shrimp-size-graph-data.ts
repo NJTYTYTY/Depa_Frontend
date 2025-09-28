@@ -77,7 +77,7 @@ export const useShrimpSizeGraphData = ({
     enabled: enabled && !!pondId,
     refetchInterval: 30000, // Refetch every 30 seconds (less frequent than regular sensors)
     staleTime: 15000, // Consider data stale after 15 seconds
-    cacheTime: 600000, // Keep in cache for 10 minutes (longer than regular sensors)
+    gcTime: 600000, // Keep in cache for 10 minutes (longer than regular sensors)
     refetchOnWindowFocus: false, // Don't refetch when window regains focus
     refetchOnMount: true, // Refetch when component mounts
   })

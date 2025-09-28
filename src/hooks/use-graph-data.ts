@@ -72,7 +72,7 @@ export const useGraphData = ({
     enabled: enabled && !!pondId,
     refetchInterval: 5000, // Refetch every 5 seconds for real-time updates
     staleTime: 3000, // Consider data stale after 3 seconds
-    cacheTime: 300000, // Keep in cache for 5 minutes
+    gcTime: 300000, // Keep in cache for 5 minutes
     refetchOnWindowFocus: false, // Don't refetch when window regains focus
     refetchOnMount: true, // Refetch when component mounts
   })
