@@ -285,23 +285,31 @@ export default function PondDetailPage() {
 
   // Function to format value with unit
   const formatValue = (sensorType: string, value: any) => {
+    // Helper function to round float values to 2 decimal places
+    const roundFloat = (val: any) => {
+      if (typeof val === 'number') {
+        return Math.round(val * 100) / 100
+      }
+      return val
+    }
+
     switch (sensorType) {
       case 'DO':
-        return `${value} mg/L`
+        return `${roundFloat(value)} mg/L`
       case 'pH':
-        return value.toString()
+        return roundFloat(value).toString()
       case 'temperature':
-        return `${value} °C`
+        return `${roundFloat(value)} °C`
       case 'shrimpSize':
-        return `${value} cm`
+        return `${roundFloat(value)} cm`
       case 'waterColor':
         return value
       case 'minerals':
-        return `${value} กิโลกรัม`
+        return `${roundFloat(value)} กิโลกรัม`
       case 'mineral1':
       case 'mineral2':
         // สำหรับ Mineral 1-2: แสดงน้ำหนักเป็นกรัม
-        return `${value} กิโลกรัม`
+        return `${roundFloat(value)} กรัม`
       case 'mineral3':
       case 'mineral4':
         // สำหรับ Mineral 3-4: แสดงข้อความตามค่า true/false

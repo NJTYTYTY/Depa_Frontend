@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart, Dot } from 'recharts'
 import { GraphDataResponse } from '@/lib/types'
 
 interface SensorGraphProps {
@@ -16,24 +16,43 @@ const SensorGraph: React.FC<SensorGraphProps> = ({
   height = 200 
 }) => {
   // Transform data for recharts
-  const chartData = data.data_points.map(point => {
+  const chartData = data.data_points.map((point, index) => {
+    // Parse timestamp as UTC to avoid timezone conversion issues
     const date = new Date(point.timestamp)
     const isShrimpSize = data.sensor_type?.includes('Shrimp Size')
     
+    // Determine if we should show date or time based on timeframe
+    const showDateOnly = isShrimpSize || (data as any).timeframe === '7D' || (data as any).timeframe === '30D'
+    
+    // For date display, only show date for the first point of each day
+    let timeLabel = ''
+    if (showDateOnly) {
+      // Check if this is the first point of a new day using UTC methods
+      const prevDate = index > 0 ? new Date(data.data_points[index - 1].timestamp) : null
+      const isFirstPointOfDay = index === 0 || 
+        (prevDate && (
+          prevDate.getUTCFullYear() !== date.getUTCFullYear() ||
+          prevDate.getUTCMonth() !== date.getUTCMonth() ||
+          prevDate.getUTCDate() !== date.getUTCDate()
+        ))
+      
+      // Only show date if it's the first point of the day
+      timeLabel = isFirstPointOfDay 
+        ? `${date.getUTCDate()} ${date.toLocaleDateString('th-TH', { month: 'short' })}`
+        : '' // Empty string for subsequent points of the same day
+    } else {
+      // For 1D timeframe, show time in local timezone
+      const localDate = new Date(date.getTime() + (date.getTimezoneOffset() * 60000))
+      timeLabel = `${localDate.getHours().toString().padStart(2, '0')}:${localDate.getMinutes().toString().padStart(2, '0')}`
+    }
+    
+    // Create local time for display
+    const localDate = new Date(date.getTime() + (date.getTimezoneOffset() * 60000))
+    
     return {
-      time: isShrimpSize 
-        ? date.toLocaleDateString('th-TH', { 
-            month: 'short', 
-            day: 'numeric' 
-          })
-        : date.toLocaleTimeString('th-TH', { 
-            hour: '2-digit', 
-            minute: '2-digit' 
-          }),
-      value: point.value,
-      fullTime: isShrimpSize 
-        ? date.toLocaleDateString('th-TH')
-        : date.toLocaleString('th-TH'),
+      time: timeLabel,
+      value: parseFloat(point.value.toFixed(2)), // Round to 2 decimal places
+      fullTime: `${localDate.getDate()} ${localDate.toLocaleDateString('th-TH', { month: 'long' })} ${localDate.getFullYear()} ${localDate.getHours().toString().padStart(2, '0')}:${localDate.getMinutes().toString().padStart(2, '0')}`,
       status: point.status
     }
   })
@@ -69,14 +88,16 @@ const SensorGraph: React.FC<SensorGraphProps> = ({
         <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
           <p className="font-semibold text-gray-800">{data.fullTime}</p>
           <p className="text-sm text-gray-600">
-            {data.value} {data.unit || ''}
+            {parseFloat(data.value.toFixed(2))} {data.unit || ''}
           </p>
           <p className="text-xs text-gray-500">
             Status: <span className={`font-medium ${
               data.status === 'green' ? 'text-green-600' : 
-              data.status === 'yellow' ? 'text-yellow-600' : 'text-red-600'
+              data.status === 'yellow' ? 'text-yellow-600' : 
+              data.status === 'red' ? 'text-red-600' : 
+              data.status === 'gray' ? 'text-gray-500' : 'text-gray-600'
             }`}>
-              {data.status}
+              {data.status === 'gray' ? 'รอข้อมูล' : data.status}
             </span>
           </p>
         </div>
@@ -100,19 +121,22 @@ const SensorGraph: React.FC<SensorGraphProps> = ({
         
         <div className="flex items-center justify-between">
           <div className="font-bold text-2xl text-gray-800">
-            {data.average_value?.toFixed(1) || '0.0'}
+            {parseFloat((data.average_value || 0).toFixed(2))}
             {data.unit && <span className="text-sm font-normal text-gray-500 ml-1">{data.unit}</span>}
           </div>
           <div className="text-sm text-gray-500">
-            {data.sensor_type?.includes('Shrimp Size') ? 'Last 30D' : 'Last 24h'}
+            {data.sensor_type?.includes('Shrimp Size') ? 'Last 30D' : 
+             (data as any).timeframe === '1D' ? 'วันนี้' :
+             (data as any).timeframe === '7D' ? '7 วันที่ผ่านมา' :
+             (data as any).timeframe === '30D' ? '30 วันที่ผ่านมา' : 'Last 24h'}
           </div>
         </div>
         
         {/* Stats */}
         <div className="flex justify-between mt-2 text-xs text-gray-500">
-          <span>Min: {data.min_value?.toFixed(1) || '0.0'}</span>
-          <span>Max: {data.max_value?.toFixed(1) || '0.0'}</span>
-          <span>Avg: {data.average_value?.toFixed(1) || '0.0'}</span>
+          <span>Min: {parseFloat((data.min_value || 0).toFixed(2))}</span>
+          <span>Max: {parseFloat((data.max_value || 0).toFixed(2))}</span>
+          <span>Avg: {parseFloat((data.average_value || 0).toFixed(2))}</span>
         </div>
       </div>
 
@@ -132,13 +156,18 @@ const SensorGraph: React.FC<SensorGraphProps> = ({
               axisLine={false}
               tickLine={false}
               tick={{ fontSize: 12, fill: '#666' }}
-              interval="preserveStartEnd"
+              interval={0}
+              tickFormatter={(value) => {
+                // Only show tick if there's a value (not empty string)
+                return value || ''
+              }}
             />
             <YAxis 
               axisLine={false}
               tickLine={false}
               tick={{ fontSize: 12, fill: '#666' }}
               domain={['dataMin - 1', 'dataMax + 1']}
+              tickFormatter={(value) => parseFloat(value.toFixed(2)).toString()}
             />
             <Tooltip content={<CustomTooltip />} />
             <Area
@@ -147,7 +176,21 @@ const SensorGraph: React.FC<SensorGraphProps> = ({
               stroke={color}
               strokeWidth={3}
               fill={`url(#gradient-${data.sensor_type.replace(/\s+/g, '-').replace(/[()]/g, '').toLowerCase()})`}
-              dot={{ fill: color, strokeWidth: 2, r: 4 }}
+              dot={(props: any) => {
+                const { cx, cy, payload } = props
+                const isWaitingData = payload?.value === 0.0 && payload?.status === 'gray'
+                return (
+                  <Dot
+                    cx={cx}
+                    cy={cy}
+                    r={isWaitingData ? 2 : 4}
+                    fill={isWaitingData ? '#9CA3AF' : color}
+                    strokeWidth={isWaitingData ? 1 : 2}
+                    stroke={isWaitingData ? '#6B7280' : color}
+                    opacity={isWaitingData ? 0.6 : 1}
+                  />
+                )
+              }}
               activeDot={{ r: 6, stroke: color, strokeWidth: 2 }}
             />
           </AreaChart>
