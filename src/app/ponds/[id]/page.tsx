@@ -298,6 +298,17 @@ export default function PondDetailPage() {
         return value
       case 'minerals':
         return `${value} กิโลกรัม`
+      case 'mineral1':
+      case 'mineral2':
+        // สำหรับ Mineral 1-2: แสดงน้ำหนักเป็นกรัม
+        return `${value} กิโลกรัม`
+      case 'mineral3':
+      case 'mineral4':
+        // สำหรับ Mineral 3-4: แสดงข้อความตามค่า true/false
+        if (typeof value === 'string') {
+          return value.toLowerCase() === 'true' ? 'ปริมาณสารเหลือน้อย' : 'ปริมาณสารคงเหลือปกติ'
+        }
+        return value.toString()
       default:
         return value.toString()
     }
@@ -567,8 +578,8 @@ export default function PondDetailPage() {
              {/* Mineral 1 Card */}
              <div className={`${getBackgroundColor(sensorData.mineral1?.status || 'green')} rounded-2xl p-5 border-2 ${getStatusColor(sensorData.mineral1?.status || 'green')} shadow-lg`}>
               <div>
-                <h3 className="font-semibold text-lg text-[#1c170d] mb-3 m-0">ค่าสาร 1</h3>
-                <div className="font-bold text-2xl text-[#1c170d] mb-3">{sensorData.mineral1?.value || '0.0'}</div>
+                <h3 className="font-semibold text-lg text-[#1c170d] mb-3 m-0">น้ำหนักสาร 1 (กิโลกรัม)</h3>
+                <div className="font-bold text-2xl text-[#1c170d] mb-3">{formatValue('mineral1', sensorData.mineral1?.value || '0.0')}</div>
                 {sensorData.mineral1?.timestamp && (
                   <div className="text-xs text-gray-500">
                     อัปเดตล่าสุด: {new Date(sensorData.mineral1.timestamp).toLocaleString('th-TH')}
@@ -580,8 +591,8 @@ export default function PondDetailPage() {
              {/* Mineral 2 Card */}
              <div className={`${getBackgroundColor(sensorData.mineral2?.status || 'green')} rounded-2xl p-5 border-2 ${getStatusColor(sensorData.mineral2?.status || 'green')} shadow-lg`}>
             <div>
-                <h3 className="font-semibold text-lg text-[#1c170d] mb-3 m-0">ค่าสาร 2</h3>
-                <div className="font-bold text-2xl text-[#1c170d] mb-3">{sensorData.mineral2?.value || '0.0'}</div>
+                <h3 className="font-semibold text-lg text-[#1c170d] mb-3 m-0">น้ำหนักสาร 2 (กิโลกรัม)</h3>
+                <div className="font-bold text-2xl text-[#1c170d] mb-3">{formatValue('mineral2', sensorData.mineral2?.value || '0.0')}</div>
                 {sensorData.mineral2?.timestamp && (
                   <div className="text-xs text-gray-500">
                     อัปเดตล่าสุด: {new Date(sensorData.mineral2.timestamp).toLocaleString('th-TH')}
@@ -593,8 +604,8 @@ export default function PondDetailPage() {
              {/* Mineral 3 Card */}
              <div className={`${getBackgroundColor(sensorData.mineral3?.status || 'green')} rounded-2xl p-5 border-2 ${getStatusColor(sensorData.mineral3?.status || 'green')} shadow-lg`}>
             <div>
-                <h3 className="font-semibold text-lg text-[#1c170d] mb-3 m-0">ค่าสาร 3</h3>
-                <div className="font-bold text-2xl text-[#1c170d] mb-3">{sensorData.mineral3?.value || '0.0'}</div>
+                <h3 className="font-semibold text-lg text-[#1c170d] mb-3 m-0">สถานะสาร 3</h3>
+                <div className="font-bold text-2xl text-[#1c170d] mb-3">{formatValue('mineral3', sensorData.mineral3?.value || 'false')}</div>
                 {sensorData.mineral3?.timestamp && (
                   <div className="text-xs text-gray-500">
                     อัปเดตล่าสุด: {new Date(sensorData.mineral3.timestamp).toLocaleString('th-TH')}
@@ -606,8 +617,8 @@ export default function PondDetailPage() {
              {/* Mineral 4 Card */}
              <div className={`${getBackgroundColor(sensorData.mineral4?.status || 'green')} rounded-2xl p-5 border-2 ${getStatusColor(sensorData.mineral4?.status || 'green')} shadow-lg`}>
             <div>
-                <h3 className="font-semibold text-lg text-[#1c170d] mb-3 m-0">ค่าสาร 4</h3>
-                <div className="font-bold text-2xl text-[#1c170d] mb-3">{sensorData.mineral4?.value || '0.0'}</div>
+                <h3 className="font-semibold text-lg text-[#1c170d] mb-3 m-0">สถานะสาร 4</h3>
+                <div className="font-bold text-2xl text-[#1c170d] mb-3">{formatValue('mineral4', sensorData.mineral4?.value || 'false')}</div>
                 {sensorData.mineral4?.timestamp && (
                 <div className="text-xs text-gray-500">
                     อัปเดตล่าสุด: {new Date(sensorData.mineral4.timestamp).toLocaleString('th-TH')}
