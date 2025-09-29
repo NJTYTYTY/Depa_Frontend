@@ -13,6 +13,7 @@ export default function ControlPage() {
   const pondId = params.id as string
   const { data: ponds } = usePonds()
   const [isLifting, setIsLifting] = useState(false)
+  const [isCapturing, setIsCapturing] = useState(false)
   const [newSchedule, setNewSchedule] = useState({
     time: '06:00',
     days: [] as string[]
@@ -151,6 +152,52 @@ const handleLiftUp = async () => {
   }
 }
 
+// ฟังก์ชันสำหรับถ่ายรูปข้างบ่อ - ส่ง POST ไปยัง cloud app
+const handleCamSide = async () => {
+  if (isCapturing) return // ป้องกันการกดซ้ำ
+  
+  setIsCapturing(true)
+  
+  try {
+    const cloudApiUrl = process.env.NEXT_PUBLIC_RSPI_SERVER_YOKYOR || 'http://localhost:3002'
+    
+    // แปลง pondId เป็น string และตรวจสอบ
+    const pondIdString = Array.isArray(pondId) ? pondId[0] : pondId
+    
+    // สร้าง request body
+    const requestBody = {
+      pondId: pondIdString,
+      action: 'cam_side',
+      timestamp: new Date().toISOString()
+    }
+    
+    console.log('📷 Sending cam_side command:', requestBody)
+    
+    const response = await fetch(`${cloudApiUrl}/api/cam-side`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody)
+    })
+
+    if (response.ok) {
+      const result = await response.json()
+      console.log('✅ cam_side command sent successfully:', result)
+      alert('คำสั่งถ่ายรูปข้างบ่อส่งสำเร็จ!')
+    } else {
+      const errorData = await response.json().catch(() => ({}))
+      console.error('❌ Failed to send cam_side command:', response.status, errorData)
+      alert('เกิดข้อผิดพลาดในการส่งคำสั่ง กรุณาลองใหม่อีกครั้ง')
+    }
+  } catch (error) {
+    console.error('💥 Error calling cloud API:', error)
+    alert('ไม่สามารถเชื่อมต่อกับระบบควบคุมได้ กรุณาตรวจสอบการเชื่อมต่อ')
+  } finally {
+    setIsCapturing(false)
+  }
+}
+
   return (
     <div className="w-full flex flex-col h-full bg-[#fcfaf7]">
         {/* Header */}
@@ -251,7 +298,7 @@ const handleLiftUp = async () => {
               </button>
             </div>
 
-            {/* Control Item 3 */}
+            {/* Control Item 3 - ถ่ายรูปข้างบ่อ */}
             <div className="control-item">
               <div className="control-content">
                 <div className="control-icon">
@@ -260,13 +307,37 @@ const handleLiftUp = async () => {
                   </svg>
                 </div>
                 <div className="control-info">
-                  <h3>3. ระบบแจ้งเตือน</h3>
-                  <p>เปิด/ปิดการแจ้งเตือนอัตโนมัติ</p>
+                  <h3>3. ถ่ายรูปข้างบ่อ</h3>
+                  <p>
+                    {isCapturing 
+                      ? 'กำลังส่งคำสั่ง...' 
+                      : 'กดเพื่อถ่ายรูปข้างบ่อ'
+                    }
+                  </p>
                 </div>
               </div>
-              <div className="toggle-switch active" onClick={(e) => toggleSwitch(e.currentTarget)}>
-                <div className="toggle-slider"></div>
-              </div>
+              <button 
+                className={`lift-button ${isCapturing ? 'loading' : ''}`}
+                onClick={handleCamSide}
+                disabled={isCapturing}
+                style={{ 
+                  cursor: isCapturing ? 'not-allowed' : 'pointer',
+                  opacity: isCapturing ? 0.7 : 1 
+                }}
+              >
+                {isCapturing ? (
+                  <div className="loading-spinner">
+                    <div className="spinner"></div>
+                  </div>
+                ) : (
+                  <>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                      <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    ถ่ายรูป
+                  </>
+                )}
+              </button>
             </div>
 
             {/* Control Item 4 */}
@@ -278,8 +349,8 @@ const handleLiftUp = async () => {
                   </svg>
                 </div>
                 <div className="control-info">
-                  <h3>4. ระบบบันทึกข้อมูล</h3>
-                  <p>เปิด/ปิดการบันทึกข้อมูลอัตโนมัติ</p>
+                  <h3>4. ระบบแจ้งเตือน</h3>
+                  <p>เปิด/ปิดการแจ้งเตือนอัตโนมัติ</p>
                 </div>
               </div>
               <div className="toggle-switch active" onClick={(e) => toggleSwitch(e.currentTarget)}>
@@ -296,7 +367,25 @@ const handleLiftUp = async () => {
                   </svg>
                 </div>
                 <div className="control-info">
-                  <h3>5. ระบบอัตโนมัติหลัก</h3>
+                  <h3>5. ระบบบันทึกข้อมูล</h3>
+                  <p>เปิด/ปิดการบันทึกข้อมูลอัตโนมัติ</p>
+                </div>
+              </div>
+              <div className="toggle-switch active" onClick={(e) => toggleSwitch(e.currentTarget)}>
+                <div className="toggle-slider"></div>
+              </div>
+            </div>
+
+            {/* Control Item 6 - System Automation */}
+            <div className="control-item">
+              <div className="control-content">
+                <div className="control-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="#1A170F"/>
+                  </svg>
+                </div>
+                <div className="control-info">
+                  <h3>6. ระบบอัตโนมัติหลัก</h3>
                   <p>
                     {isSystemToggling 
                       ? 'กำลังเปลี่ยนสถานะ...' 
@@ -324,7 +413,7 @@ const handleLiftUp = async () => {
               </div>
             </div>
 
-            {/* Control Item 6 - Routine Settings */}
+            {/* Control Item 7 - Routine Settings */}
             <div className="control-item">
               <div className="control-content">
                 <div className="control-icon">
@@ -333,7 +422,7 @@ const handleLiftUp = async () => {
                   </svg>
                 </div>
                 <div className="control-info">
-                  <h3>6. ตั้งเวลา Routine ยกยอ</h3>
+                  <h3>7. ตั้งเวลา Routine ยกยอ</h3>
                   <p>กำหนดเวลายกยออัตโนมัติ (ยกขึ้น → ถ่ายรูป → ยกลง)</p>
                 </div>
               </div>
