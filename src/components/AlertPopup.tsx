@@ -159,16 +159,21 @@ const AlertPopup: React.FC<AlertPopupProps> = ({
                           </p>
                           {/* Timestamp */}
                           <div className="text-xs text-gray-500 bg-gray-100 border border-black px-2 py-1 rounded-md inline-block">
-                            {new Date(alert.created_at).toLocaleString('th-TH', {
-                              year: 'numeric',
-                              month: '2-digit',
-                              day: '2-digit',
-                              hour: '2-digit',
-                              minute: '2-digit',
-                              second: '2-digit',
-                              hour12: true,
-                              timeZone: 'Asia/Bangkok'
-                            })}
+                            {(() => {
+                              const date = new Date(alert.created_at);
+                              // เพิ่ม 7 ชั่วโมงเพื่อแก้ไขเวลาที่หายไป
+                              date.setHours(date.getHours() + 7);
+                              return date.toLocaleString('th-TH', {
+                                year: 'numeric',
+                                month: '2-digit',
+                                day: '2-digit',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                second: '2-digit',
+                                hour12: true,
+                                timeZone: 'Asia/Bangkok'
+                              });
+                            })()}
                           </div>
                         </div>
                         <div className="ml-2 flex items-center">
