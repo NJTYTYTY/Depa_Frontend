@@ -6,13 +6,14 @@ import { usePonds } from '@/hooks/use-ponds'
 import { useRoutineSettings } from '@/hooks/use-routine-settings'
 import { useRoutineTimer } from '@/hooks/use-routine-timer'
 import { useSystemControl } from '@/hooks/use-system-control'
+import { usePondStatus } from '@/hooks/use-pond-status'
+import StatusPopup from '@/components/StatusPopup'
 
 export default function ControlPage() {
   const router = useRouter()
   const params = useParams()
   const pondId = params.id as string
   const { data: ponds } = usePonds()
-  const [isLifting, setIsLifting] = useState(false)
   const [isCapturing, setIsCapturing] = useState(false)
   const [newSchedule, setNewSchedule] = useState({
     time: '06:00',
@@ -40,6 +41,28 @@ export default function ControlPage() {
 
   // Use routine timer hook
   useRoutineTimer({ enabled: true })
+
+  // Use pond status hook
+  const {
+    currentStatus,
+    isProcessing,
+    showPopup,
+    error,
+    isCompleted,
+    startLiftProcess,
+    handleStatusUpdate,
+    closePopup,
+    resetStatus,
+    getStatusMessage
+  } = usePondStatus({
+    pondId: parseInt(pondId),
+    onStatusUpdate: (status) => {
+      console.log('Status updated:', status, getStatusMessage(status));
+    },
+    onStatusComplete: () => {
+      console.log('Lift process completed!');
+    }
+  });
   
   // Find the current pond
   const pond = ponds?.find(p => p.id === pondId)
@@ -108,9 +131,7 @@ export default function ControlPage() {
 
 // ฟังก์ชันสำหรับควบคุมยอ - ส่ง POST ไปยัง backend_middle
 const handleLiftUp = async () => {
-  if (isLifting) return // ป้องกันการกดซ้ำ
-  
-  setIsLifting(true)
+  if (isProcessing) return // ป้องกันการกดซ้ำ
   
   try {
     const backendMiddleUrl = process.env.NEXT_PUBLIC_RSPI_SERVER_YOKYOR || 'http://localhost:3002'
@@ -138,7 +159,10 @@ const handleLiftUp = async () => {
     if (response.ok) {
       const result = await response.json()
       console.log('✅ lift_up command sent successfully:', result)
-      alert('คำสั่งยกยอขึ้นส่งสำเร็จ!')
+      
+      // เริ่มแสดง StatusPopup
+      startLiftProcess();
+      
     } else {
       const errorData = await response.json().catch(() => ({}))
       console.error('❌ Failed to send lift_up command:', response.status, errorData)
@@ -147,8 +171,6 @@ const handleLiftUp = async () => {
   } catch (error) {
     console.error('💥 Error calling backend_middle:', error)
     alert('ไม่สามารถเชื่อมต่อกับระบบควบคุมได้ กรุณาตรวจสอบการเชื่อมต่อ')
-  } finally {
-    setIsLifting(false)
   }
 }
 
@@ -267,23 +289,23 @@ const handleCamSide = async () => {
                 <div className="control-info">
                   <h3>2. ยกยอขึ้น/ลง</h3>
                   <p>
-                    {isLifting 
-                      ? 'กำลังส่งคำสั่ง...' 
+                    {isProcessing 
+                      ? 'กำลังประมวลผล...' 
                       : 'กดเพื่อยกยอขึ้น → ถ่ายรูป → ยกลง'
                     }
                   </p>
                 </div>
               </div>
               <button 
-                className={`lift-button ${isLifting ? 'loading' : ''}`}
+                className={`lift-button ${isProcessing ? 'loading' : ''}`}
                 onClick={handleLiftUp}
-                disabled={isLifting}
+                disabled={isProcessing}
                 style={{ 
-                  cursor: isLifting ? 'not-allowed' : 'pointer',
-                  opacity: isLifting ? 0.7 : 1 
+                  cursor: isProcessing ? 'not-allowed' : 'pointer',
+                  opacity: isProcessing ? 0.7 : 1 
                 }}
               >
-                {isLifting ? (
+                {isProcessing ? (
                   <div className="loading-spinner">
                     <div className="spinner"></div>
                   </div>
@@ -2086,6 +2108,18 @@ const handleCamSide = async () => {
           }
         }
       `}</style>
+      
+      {/* Status Popup */}
+      <StatusPopup
+        isOpen={showPopup}
+        onClose={closePopup}
+        pondId={parseInt(pondId)}
+        currentStatus={currentStatus}
+        onStatusComplete={() => {
+          console.log('Status process completed!');
+          resetStatus();
+        }}
+      />
     </div>
   )
 }
