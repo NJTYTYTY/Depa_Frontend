@@ -19,14 +19,15 @@ export const usePondStatus = ({ pondId, onStatusUpdate, onStatusComplete }: UseP
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [showPopup, setShowPopup] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [isCompleted, setIsCompleted] = useState<boolean>(false);
 
   // Status messages mapping
   const statusMessages = {
-    1: 'กำลังเริ่มยกยอขึ้น....',
-    2: 'กำลังเตรียมกล้องถ่ายรูป....',
+    1: 'กำลังเตรียมกล้องถ่ายรูป....',
+    2: 'กำลังเริ่มยกยอขึ้น....',
     3: 'ถ่ายสำเร็จ...',
     4: 'กรุณารอข้อมูลสักครู่...',
-    5: 'สำเร็จ!!....'
+    5: 'กำลังประมวลผลข้อมูลผ่านระบบ AI โปรดรอ 1 นาที!!....'
   };
 
   // Start the lift process
@@ -75,6 +76,7 @@ export const usePondStatus = ({ pondId, onStatusUpdate, onStatusComplete }: UseP
             if (data.data.status === 5) {
               console.log('✅ Process completed!');
               setIsProcessing(false);
+              setIsCompleted(true);
               onStatusComplete?.();
               clearInterval(pollInterval);
             }
@@ -104,6 +106,7 @@ export const usePondStatus = ({ pondId, onStatusUpdate, onStatusComplete }: UseP
     
     if (status === 5) {
       setIsProcessing(false);
+      setIsCompleted(true); // Set isCompleted to true when status is 5
       onStatusComplete?.();
     }
   }, [onStatusUpdate, onStatusComplete]);
@@ -113,8 +116,43 @@ export const usePondStatus = ({ pondId, onStatusUpdate, onStatusComplete }: UseP
     setShowPopup(false);
     if (currentStatus === 5) {
       setIsProcessing(false);
+      // Reset completed state after a short delay to allow user to see the completion
+      setTimeout(() => {
+        setIsCompleted(false);
+        setCurrentStatus(0);
+      }, 2000);
+    } else if (isCompleted) {
+      // If popup is closed while completed, reset immediately
+      setIsCompleted(false);
+      setCurrentStatus(0);
     }
-  }, [currentStatus]);
+  }, [currentStatus, isCompleted]);
+
+  // Show current status popup (without starting new process)
+  const showCurrentStatus = useCallback(async () => {
+    console.log('🔍 Showing current status for pond:', pondId);
+    setShowPopup(true);
+    setError(null);
+    
+    // Fetch current status from API
+    try {
+      const response = await fetch(`/api/pond-status/${pondId}`);
+      if (response.ok) {
+        const data = await response.json();
+        console.log('📊 Current status response:', data);
+        if (data.data && data.data.status) {
+          setCurrentStatus(data.data.status);
+          console.log(`📋 Current status: ${data.data.status}`);
+        }
+      } else {
+        console.log('❌ Failed to fetch current status:', response.status);
+        setError('ไม่สามารถดึงสถานะปัจจุบันได้');
+      }
+    } catch (error) {
+      console.error('Error fetching current status:', error);
+      setError('เกิดข้อผิดพลาดในการดึงสถานะ');
+    }
+  }, [pondId]);
 
   // Reset status
   const resetStatus = useCallback(() => {
@@ -123,9 +161,6 @@ export const usePondStatus = ({ pondId, onStatusUpdate, onStatusComplete }: UseP
     setShowPopup(false);
     setError(null);
   }, []);
-
-  // Check if process is completed
-  const isCompleted = currentStatus === 5;
 
   // Get current status message
   const getStatusMessage = useCallback((status: number) => {
@@ -138,9 +173,10 @@ export const usePondStatus = ({ pondId, onStatusUpdate, onStatusComplete }: UseP
     showPopup,
     error,
     isCompleted,
-    startLiftProcess,
     handleStatusUpdate,
+    startLiftProcess,
     closePopup,
+    showCurrentStatus,
     resetStatus,
     getStatusMessage
   };
