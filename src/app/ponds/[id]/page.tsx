@@ -330,12 +330,54 @@ export default function PondDetailPage() {
   }
 
   if (error || batchError) {
+    const [countdown, setCountdown] = useState(10)
+
+    const handleRefresh = () => {
+      // Refresh the page
+      window.location.reload()
+    }
+
+    // Auto refresh countdown
+    useEffect(() => {
+      const timer = setInterval(() => {
+        setCountdown(prev => {
+          if (prev <= 1) {
+            console.log('🔄 Auto-refreshing page due to error...')
+            window.location.reload()
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+
+      return () => clearInterval(timer)
+    }, [])
+
     return (
-      <div className="w-full flex flex-col h-full bg-[#fcfaf7] items-center justify-center">
-        <div className="text-lg text-red-600">เกิดข้อผิดพลาด:</div>
-        {error && <div className="text-sm text-red-500 mt-1">เซ็นเซอร์: {error.message}</div>}
-        {batchError && <div className="text-sm text-red-500 mt-1">กุ้ง: {batchError.message}</div>}
-        <div className="text-sm text-gray-500 mt-2">กำลังใช้ข้อมูลสำรอง</div>
+      <div className="w-full flex flex-col h-full bg-[#fcfaf7] items-center justify-center px-4">
+        <div className="text-center">
+          <div className="text-6xl mb-4">⚠️</div>
+          <div className="text-lg text-red-600 font-bold mb-2">เกิดข้อผิดพลาด:</div>
+          {error && <div className="text-sm text-red-500 mt-1 mb-1">เซ็นเซอร์: {error.message}</div>}
+          {batchError && <div className="text-sm text-red-500 mt-1 mb-1">กุ้ง: {batchError.message}</div>}
+          <div className="text-sm text-gray-500 mt-2 mb-6">กำลังใช้ข้อมูลสำรอง</div>
+          
+          {/* Refresh Button */}
+          <button
+            onClick={handleRefresh}
+            className="bg-[#f2c245] hover:bg-[#e6b63d] text-[#1c170d] font-bold py-3 px-6 rounded-xl transition-colors duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-2 mx-auto"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span>รีเฟรชหน้า</span>
+          </button>
+          
+          {/* Auto refresh countdown */}
+          <div className="text-xs text-gray-400 mt-4">
+            กำลังรีเฟรชอัตโนมัติใน <span className="font-bold text-[#f2c245]">{countdown}</span> วินาที...
+          </div>
+        </div>
       </div>
     )
   }

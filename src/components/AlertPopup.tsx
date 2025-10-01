@@ -82,6 +82,32 @@ const AlertPopup: React.FC<AlertPopupProps> = ({
     }
   };
 
+  const handleMarkAllAsRead = async () => {
+    if (alerts.length === 0) return;
+    
+    console.log('🔄 AlertPopup: handleMarkAllAsRead called for', alerts.length, 'alerts');
+    
+    try {
+      // Mark all alerts as read one by one
+      for (const alert of alerts) {
+        await markAlertAsRead(alert.id);
+      }
+      
+      // Clear all alerts from local state
+      setAlerts([]);
+      setSelectedAlertId(null);
+      
+      console.log('🔄 AlertPopup: All alerts marked as read');
+      // Call parent callback
+      onMarkAsRead?.();
+      
+      // Close popup
+      onClose();
+    } catch (error) {
+      console.error('Error marking all alerts as read:', error);
+    }
+  };
+
 
   const handleClose = () => {
     setSelectedAlertId(null);
@@ -93,8 +119,8 @@ const AlertPopup: React.FC<AlertPopupProps> = ({
   const selectedAlert = alerts.find(alert => alert.id === selectedAlertId);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 backdrop-blur-sm">
-      <div className="bg-gradient-to-br from-[#fcfaf7] to-yellow-50 rounded-3xl shadow-2xl max-w-lg w-full mx-4 border-2 border-[#f2c245] overflow-hidden">
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 backdrop-blur-sm p-4">
+      <div className="bg-gradient-to-br from-[#fcfaf7] to-yellow-50 rounded-3xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="bg-gradient-to-r from-[#f2c245] to-[#e6b63d] p-6 text-center relative">
           <div className="absolute top-2 right-2">
@@ -116,7 +142,7 @@ const AlertPopup: React.FC<AlertPopupProps> = ({
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="p-6 flex-1 overflow-y-auto">
           {alerts.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-green-500 text-6xl mb-4">✅</div>
@@ -136,7 +162,7 @@ const AlertPopup: React.FC<AlertPopupProps> = ({
                     {alerts.length}
                   </div>
                 </div>
-                <div className="space-y-2 max-h-80 overflow-y-auto">
+                <div className="space-y-2 max-h-60 overflow-y-auto">
                   {alerts.map((alert) => (
                     <div
                       key={alert.id}
@@ -178,7 +204,10 @@ const AlertPopup: React.FC<AlertPopupProps> = ({
                         </div>
                         <div className="ml-2 flex items-center">
                           {selectedAlertId === alert.id && (
-                            <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse shadow-md"></div>
+                            <div className="relative">
+                              <div className="absolute inset-0 rounded-full bg-red-500 animate-ping opacity-75"></div>
+                              <div className="relative w-35 h-35 bg-red-500 rounded-full shadow-md"></div>
+                            </div>
                           )}
                         </div>
                       </div>
@@ -192,15 +221,38 @@ const AlertPopup: React.FC<AlertPopupProps> = ({
 
         {/* Actions */}
         {alerts.length > 0 && (
-          <div className="bg-gradient-to-r from-gray-50 to-yellow-50 p-6 border-t-2 border-[#f2c245]">
-            <div className="flex justify-center">
+          <div className="bg-gradient-to-r from-gray-50 to-yellow-50 p-6 flex-shrink-0">
+            <div className="flex justify-center items-center relative">
+              {/* Main Read Button - Center */}
               <button
                 onClick={handleMarkAsRead}
                 disabled={isLoading || !selectedAlertId}
-                className="w-16 h-16 bg-green-500 text-white rounded-full hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:transform-none flex items-center justify-center"
+                className="bg-green-500 hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:transform-none flex items-center justify-center space-x-2"
               >
-                {isLoading ? '⏳' : '✓'}
+                {isLoading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>กำลังประมวลผล...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>✓</span>
+                    <span>อ่านแล้ว</span>
+                  </>
+                )}
               </button>
+              
+              {/* Clear All Button - Bottom Right */}
+              {alerts.length > 1 && (
+                <button
+                  onClick={handleMarkAllAsRead}
+                  disabled={isLoading}
+                  className="absolute right-0 bg-red-500 hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed text-white w-16 h-8 rounded-full text-xs font-medium transition-colors duration-200 flex items-center justify-center shadow-md hover:shadow-lg"
+                  title="ล้างทั้งหมด"
+                >
+                  ล้าง🗑️
+                </button>
+              )}
             </div>
           </div>
         )}

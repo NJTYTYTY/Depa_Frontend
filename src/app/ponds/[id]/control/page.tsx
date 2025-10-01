@@ -20,7 +20,6 @@ export default function ControlPage() {
     days: [] as string[]
   })
   const [showRoutineSettings, setShowRoutineSettings] = useState(false)
-  const [showQuickTimes, setShowQuickTimes] = useState(false)
 
   // Use routine settings hook
   const { 
@@ -608,136 +607,93 @@ const handleCamSide = async () => {
                   </button>
                 </div>
                 
-                {/* Quick Actions */}
-                <div className="quick-actions">
-                  <div className="action-item">
-                    <div className="action-icon">⏰</div>
-                    <div className="action-text">
-                      <span className="action-title">เวลาที่แนะนำ</span>
-                      <span className="action-desc">เลือกเวลาที่ใช้บ่อย</span>
-                    </div>
-                    <button 
-                      className="toggle-quick-times-btn"
-                      onClick={() => setShowQuickTimes(!showQuickTimes)}
-                    >
-                      <span>{showQuickTimes ? 'ซ่อน' : 'แสดง'}</span>
-                      <svg 
-                        width="16" 
-                        height="16" 
-                        viewBox="0 0 24 24" 
-                        fill="none"
-                        style={{ transform: showQuickTimes ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}
-                      >
-                        <path d="M12 15l-3-3h6l-3 3z" fill="currentColor"/>
-                      </svg>
-                    </button>
-                  </div>
-                  {showQuickTimes && (
-                    <div className="quick-times">
-                      {['06:00', '12:00', '18:00'].map(time => (
-                        <button 
-                          key={time}
-                          className={`quick-time-btn ${newSchedule.time === time ? 'active' : ''}`}
-                          onClick={() => setNewSchedule(prev => ({...prev, time}))}
-                        >
-                          {time}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
                 
                 {/* Add New Schedule */}
-                <div className="add-schedule-section">
-                  <div className="section-header">
-                    <h4>เพิ่มตารางเวลาใหม่</h4>
-                  </div>
-                  <div className="schedule-form">
-                    <div className="form-row">
-                      <div className="form-group">
-                        <label>
-                          <span className="label-icon">🕐</span>
-                          เวลา
-                        </label>
-                        <div className="time-input-wrapper">
-                          <input 
-                            type="time" 
-                            value={newSchedule.time}
-                            onChange={(e) => setNewSchedule(prev => ({...prev, time: e.target.value}))}
-                            className="time-input"
-                          />
-                          <div className="input-decoration"></div>
-                        </div>
-                      </div>
-                    </div>
-                    
+                <div className="schedule-form">
+                  <div className="form-row">
                     <div className="form-group">
                       <label>
-                        <span className="label-icon">📅</span>
-                        วันในสัปดาห์
+                        <span className="label-icon">🕐</span>
+                        <h5>เพิ่มตารางเวลาใหม่</h5>
                       </label>
-                      <div className="days-container">
-                        <div className="days-header">
-                          <span>เลือกวัน</span>
-                          <div className="day-actions">
-                            <button 
-                              className="select-all-btn"
-                              onClick={() => setNewSchedule(prev => ({
-                                ...prev,
-                                days: ['จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์', 'อาทิตย์']
-                              }))}
-                            >
-                              เลือกทั้งหมด
-                            </button>
-                            <button 
-                              className="clear-all-btn"
-                              onClick={() => setNewSchedule(prev => ({...prev, days: []}))}
-                            >
-                              ล้างทั้งหมด
-                            </button>
-                          </div>
-                        </div>
-                        <div className="days-checkboxes">
-                          {['จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์', 'อาทิตย์'].map((day, index) => (
-                            <label key={day} className={`day-checkbox ${newSchedule.days.includes(day) ? 'checked' : ''}`}>
-                              <input 
-                                type="checkbox"
-                                checked={newSchedule.days.includes(day)}
-                                onChange={(e) => handleDayChange(day, e.target.checked)}
-                              />
-                              <span className="day-text">{day}</span>
-                              <div className="checkmark">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                                  <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                </svg>
-                              </div>
-                            </label>
-                          ))}
-                        </div>
+                      <div className="time-input-wrapper">
+                        <input 
+                          type="time" 
+                          value={newSchedule.time}
+                          onChange={(e) => setNewSchedule(prev => ({...prev, time: e.target.value}))}
+                          className="time-input"
+                        />
+                        <div className="input-decoration"></div>
                       </div>
                     </div>
-                    
-                    <div className="form-actions">
-                      <button 
-                        className="add-schedule-btn"
-                        onClick={addSchedule}
-                        disabled={!newSchedule.time || newSchedule.days.length === 0 || addScheduleMutation.isPending}
-                      >
-                        {addScheduleMutation.isPending ? (
-                          <>
-                            <div className="btn-spinner"></div>
-                            กำลังเพิ่ม...
-                          </>
-                        ) : (
-                          <>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                              <path d="M12 5v14m7-7H5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                            เพิ่มตารางเวลา
-                          </>
-                        )}
-                      </button>
+                  </div>
+                  
+                  <div className="form-group">
+                    <label>
+                      <span className="label-icon">📅</span>
+                      วันในสัปดาห์
+                    </label>
+                    <div className="days-container">
+                      <div className="days-header">
+                        <span>เลือกวัน</span>
+                        <div className="day-actions">
+                          <button 
+                            className="select-all-btn"
+                            onClick={() => setNewSchedule(prev => ({
+                              ...prev,
+                              days: ['จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์', 'อาทิตย์']
+                            }))}
+                          >
+                            เลือกทั้งหมด
+                          </button>
+                          <button 
+                            className="clear-all-btn"
+                            onClick={() => setNewSchedule(prev => ({...prev, days: []}))}
+                          >
+                            ล้างทั้งหมด
+                          </button>
+                        </div>
+                      </div>
+                      <div className="days-checkboxes">
+                        {['จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์', 'อาทิตย์'].map((day, index) => (
+                          <label key={day} className={`day-checkbox ${newSchedule.days.includes(day) ? 'checked' : ''}`}>
+                            <input 
+                              type="checkbox"
+                              checked={newSchedule.days.includes(day)}
+                              onChange={(e) => handleDayChange(day, e.target.checked)}
+                            />
+                            <span className="day-text">{day}</span>
+                            <div className="checkmark">
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                                <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
                     </div>
+                  </div>
+                  
+                  <div className="form-actions">
+                    <button 
+                      className="add-schedule-btn"
+                      onClick={addSchedule}
+                      disabled={!newSchedule.time || newSchedule.days.length === 0 || addScheduleMutation.isPending}
+                    >
+                      {addScheduleMutation.isPending ? (
+                        <>
+                          <div className="btn-spinner"></div>
+                          กำลังเพิ่ม...
+                        </>
+                      ) : (
+                        <>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 5v14m7-7H5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                          เพิ่มตารางเวลา
+                        </>
+                      )}
+                    </button>
                   </div>
                 </div>
 
@@ -1154,111 +1110,7 @@ const handleCamSide = async () => {
           color: #6B7280;
         }
 
-        /* Quick Actions */
-        .quick-actions {
-          margin-bottom: 32px;
-          background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
-          border-radius: 16px;
-          padding: 24px;
-          border: 1px solid #BAE6FD;
-        }
 
-        .action-item {
-          display: flex;
-          align-items: center;
-          gap: 16px;
-        }
-
-        .toggle-quick-times-btn {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 8px 16px;
-          border: 2px solid #E2E8F0;
-          border-radius: 8px;
-          background: white;
-          color: #64748B;
-          font-weight: 600;
-          font-size: 14px;
-          cursor: pointer;
-          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-          flex-shrink: 0;
-        }
-
-        .toggle-quick-times-btn:hover {
-          border-color: #0EA5E9;
-          color: #0EA5E9;
-          background: #F0F9FF;
-          transform: translateY(-1px);
-        }
-
-        .toggle-quick-times-btn:active {
-          transform: translateY(0);
-        }
-
-        .action-icon {
-          font-size: 20px;
-          width: 40px;
-          height: 40px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: white;
-          border-radius: 12px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .action-text {
-          flex: 1;
-        }
-
-        .action-title {
-          display: block;
-          font-weight: 600;
-          color: #0F172A;
-          font-size: 16px;
-          margin-bottom: 4px;
-        }
-
-        .action-desc {
-          display: block;
-          color: #64748B;
-          font-size: 14px;
-        }
-
-        .quick-times {
-          display: flex;
-          gap: 8px;
-          margin-top: 16px;
-          padding-top: 16px;
-          border-top: 1px solid #E2E8F0;
-          animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .quick-time-btn {
-          padding: 8px 16px;
-          border: 2px solid #E2E8F0;
-          border-radius: 8px;
-          background: white;
-          color: #64748B;
-          font-weight: 600;
-          font-size: 14px;
-          cursor: pointer;
-          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .quick-time-btn:hover {
-          border-color: #0EA5E9;
-          color: #0EA5E9;
-          transform: translateY(-1px);
-        }
-
-        .quick-time-btn.active {
-          border-color: #0EA5E9;
-          background: #0EA5E9;
-          color: white;
-          box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
-        }
 
         /* Section Headers */
         .section-header {
@@ -2031,23 +1883,6 @@ const handleCamSide = async () => {
 
         /* Responsive Design */
         @media (max-width: 768px) {
-          .quick-actions {
-            padding: 20px;
-          }
-          
-          .action-item {
-            flex-direction: column;
-            align-items: stretch;
-            gap: 16px;
-          }
-          
-          .toggle-quick-times-btn {
-            align-self: center;
-          }
-          
-          .quick-times {
-            justify-content: center;
-          }
           
           .days-checkboxes {
             grid-template-columns: repeat(2, 1fr);
@@ -2133,23 +1968,6 @@ const handleCamSide = async () => {
             padding: 12px;
           }
           
-          .quick-actions {
-            padding: 16px;
-          }
-          
-          .action-item {
-            gap: 12px;
-          }
-          
-          .quick-times {
-            flex-wrap: wrap;
-            gap: 6px;
-          }
-          
-          .quick-time-btn {
-            padding: 6px 12px;
-            font-size: 13px;
-          }
           
           .panel-header {
             flex-direction: column;

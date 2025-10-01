@@ -36,18 +36,37 @@ export async function POST(request: NextRequest) {
 
     // 2) ตรวจสอบ API key
     const apiKey = process.env.GEMINI_API_KEY
+    console.log('🔑 API Key check:', {
+      hasApiKey: !!apiKey,
+      keyLength: apiKey?.length || 0,
+      environment: process.env.NODE_ENV
+    })
+    
     if (!apiKey) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            message: 'ผู้ช่วย AI ยังไม่พร้อมใช้งาน กรุณาติดต่อผู้ดูแลระบบ',
-            code: 'NO_API_KEY',
-            environment: process.env.NODE_ENV,
-          },
-        },
-        { status: 500 }
-      )
+      console.log('❌ GEMINI_API_KEY not found in environment variables')
+      // ส่ง fallback response แทน error
+      return NextResponse.json({
+        success: true,
+        data: { 
+          answer: `สวัสดีครับ! ผมคือผู้ช่วย AI สำหรับการเลี้ยงกุ้ง
+
+ข้อมูลบ่อปัจจุบัน:
+- ชื่อบ่อ: ${pondData?.name || 'ไม่ระบุ'}
+- ขนาดบ่อ: ${pondData?.size || 'ไม่ระบุ'} ไร่
+- จำนวนกุ้ง: ${pondData?.shrimp_count || 'ไม่ระบุ'} ตัว
+
+คำถาม: ${question}
+
+คำตอบ: ขออภัยครับ ตอนนี้ระบบ AI ยังไม่พร้อมใช้งาน แต่ผมสามารถให้คำแนะนำทั่วไปเกี่ยวกับการเลี้ยงกุ้งได้:
+
+- ควรตรวจสอบคุณภาพน้ำเป็นประจำ
+- ให้อาหารกุ้งในปริมาณที่เหมาะสม
+- ระวังโรคและศัตรูพืช
+- เปลี่ยนน้ำตามกำหนด
+
+หากต้องการคำแนะนำเฉพาะเจาะจง กรุณาติดต่อผู้เชี่ยวชาญครับ`
+        }
+      })
     }
 
     // 3) สร้าง context
@@ -78,8 +97,9 @@ ${formatPondData(pondData)}
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 10000) // 10s timeout
 
+    console.log('🚀 Calling Gemini API...')
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -89,13 +109,48 @@ ${formatPondData(pondData)}
         signal: controller.signal,
       }
     )
+    
+    
+    
+    console.log('📡 Gemini API Response:', {
+      status: response.status,
+      statusText: response.statusText,
+      ok: response.ok
+    })
 
     clearTimeout(timeout)
 
     // 5) ตรวจสอบ response
     if (!response.ok) {
       const errText = await response.text()
-      console.error('Gemini API error response:', errText)
+      console.log('Gemini API error response:', errText)
+      
+      // ถ้าไม่มี API key หรือ API key ไม่ถูกต้อง ให้ส่ง fallback response
+      if (response.status === 400 || response.status === 403) {
+        return NextResponse.json({
+          success: true,
+          data: { 
+            answer: `สวัสดีครับ! ผมคือผู้ช่วย AI สำหรับการเลี้ยงกุ้ง
+
+ข้อมูลบ่อปัจจุบัน:
+- ชื่อบ่อ: ${pondData?.name || 'ไม่ระบุ'}
+- ขนาดบ่อ: ${pondData?.size || 'ไม่ระบุ'} ไร่
+- จำนวนกุ้ง: ${pondData?.shrimp_count || 'ไม่ระบุ'} ตัว
+
+คำถาม: ${question}
+
+คำตอบ: ขออภัยครับ ตอนนี้ระบบ AI ยังไม่พร้อมใช้งาน แต่ผมสามารถให้คำแนะนำทั่วไปเกี่ยวกับการเลี้ยงกุ้งได้:
+
+- ควรตรวจสอบคุณภาพน้ำเป็นประจำ
+- ให้อาหารกุ้งในปริมาณที่เหมาะสม
+- ระวังโรคและศัตรูพืช
+- เปลี่ยนน้ำตามกำหนด
+
+หากต้องการคำแนะนำเฉพาะเจาะจง กรุณาติดต่อผู้เชี่ยวชาญครับ`
+          }
+        })
+      }
+      
       return NextResponse.json(
         {
           success: false,
@@ -120,7 +175,7 @@ ${formatPondData(pondData)}
       data: { answer },
     })
   } catch (error) {
-    console.error('Error in POST /api/agent:', error)
+    console.log('Error in POST /api/agent:', error)
 
     return NextResponse.json(
       {

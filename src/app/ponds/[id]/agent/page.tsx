@@ -108,6 +108,12 @@ export default function AgentPage() {
     console.log('🐟 All Ponds:', ponds)
 
     try {
+      console.log('Sending request to API with:', {
+        question: inputMessage,
+        pondId: pondId,
+        pondData: currentPond
+      })
+
       const response = await fetch('/api/agent/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -118,23 +124,58 @@ export default function AgentPage() {
         }),
       })
 
+      console.log('Response status:', response.status, response.statusText)
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        let errorData = null
+        try {
+          errorData = await response.json()
+        } catch (e) {
+          console.log('Could not parse error response as JSON')
+        }
+        
+        console.log('API Error Details:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorData
+        })
+        
+        const errorMessage: Message = {
+          id: messages.length + 2,
+          content: `เกิดข้อผิดพลาด: ${errorData?.error?.message || response.statusText} (${response.status})`,
+          type: 'assistant',
+          timestamp: new Date()
+        }
+        setMessages(prevMessages => [...prevMessages, errorMessage])
+        return
       }
 
       const data = await response.json()
+      console.log('API Response:', data)
+      
+      if (!data.success) {
+        const errorMessage: Message = {
+          id: messages.length + 2,
+          content: `API Error: ${data.error?.message || 'ไม่สามารถประมวลผลคำถามได้'}`,
+          type: 'assistant',
+          timestamp: new Date()
+        }
+        setMessages(prevMessages => [...prevMessages, errorMessage])
+        return
+      }
+      
       const aiResponse: Message = {
         id: messages.length + 2,
-        content: data.answer || 'ไม่พบคำตอบ',
+        content: data.data?.answer || 'ไม่พบคำตอบ',
         type: 'assistant',
         timestamp: new Date()
       }
       setMessages(prevMessages => [...prevMessages, aiResponse])
     } catch (error) {
-      console.error('Error sending message to AI:', error)
+      console.log('Error sending message to AI:', error)
       const errorMessage: Message = {
         id: messages.length + 2,
-        content: 'เกิดข้อผิดพลาดในการเชื่อมต่อ AI',
+        content: `เกิดข้อผิดพลาดในการเชื่อมต่อ: ${error instanceof Error ? error.message : 'Unknown error'}`,
         type: 'assistant',
         timestamp: new Date()
       }
