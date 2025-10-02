@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     const { question, pondId, pondData } = requestSchema.parse(body)
 
     // 2) ตรวจสอบ API key
-    const apiKey = process.env.GEMINI_API_KEY
+    const apiKey = process.env.DEEPSEEK_API_KEY
     console.log('🔑 API Key check:', {
       hasApiKey: !!apiKey,
       keyLength: apiKey?.length || 0,
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     })
     
     if (!apiKey) {
-      console.log('❌ GEMINI_API_KEY not found in environment variables')
+      console.log('❌ DEEPSEEK_API_KEY not found in environment variables')
       // ส่ง fallback response แทน error
       return NextResponse.json({
         success: true,
@@ -93,18 +93,33 @@ ${formatPondData(pondData)}
       console.log('🤖 Generated Context:', context)
     }
 
-    // 4) เรียก Gemini API พร้อม timeout
+    // 4) เรียก DeepSeek API พร้อม timeout
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 10000) // 10s timeout
 
-    console.log('🚀 Calling Gemini API...')
+    console.log('🚀 Calling DeepSeek API...')
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`,
+      'https://api.deepseek.com/v1/chat/completions',
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: context }] }],
+          model: 'deepseek-chat',
+          messages: [
+            {
+              role: 'system',
+              content: 'คุณคือผู้ช่วย AI ที่เชี่ยวชาญด้านการเลี้ยงกุ้งและบ่อเลี้ยงกุ้ง ตอบเป็นภาษาไทยที่เข้าใจง่ายสำหรับเกษตรกร'
+            },
+            {
+              role: 'user',
+              content: context
+            }
+          ],
+          max_tokens: 500,
+          temperature: 0.7
         }),
         signal: controller.signal,
       }
@@ -112,7 +127,7 @@ ${formatPondData(pondData)}
     
     
     
-    console.log('📡 Gemini API Response:', {
+    console.log('📡 DeepSeek API Response:', {
       status: response.status,
       statusText: response.statusText,
       ok: response.ok
@@ -166,7 +181,7 @@ ${formatPondData(pondData)}
 
     const data = await response.json()
     const answer =
-      data.candidates?.[0]?.content?.parts?.[0]?.text ||
+      data.choices?.[0]?.message?.content ||
       'ไม่สามารถสร้างคำตอบได้'
 
     // 6) ส่งกลับ standardized response
