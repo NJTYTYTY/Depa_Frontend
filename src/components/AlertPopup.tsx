@@ -252,7 +252,14 @@ const AlertPopup: React.FC<AlertPopupProps> = ({
                   className="absolute right-0 bg-red-500 hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed text-white w-16 h-8 rounded-full text-xs font-medium transition-colors duration-200 flex items-center justify-center shadow-md hover:shadow-lg"
                   title="ล้างทั้งหมด"
                 >
-                  ล้าง🗑️
+                  {isLoading ? (
+                    <>
+                      <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin mr-1"></div>
+                      <span className="text-xs">กำลังล้าง...</span>
+                    </>
+                  ) : (
+                    'ล้าง🗑️'
+                  )}
                 </button>
               )}
             </div>
