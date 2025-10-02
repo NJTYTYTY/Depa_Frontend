@@ -88,16 +88,21 @@ const AlertPopup: React.FC<AlertPopupProps> = ({
     console.log('🔄 AlertPopup: handleMarkAllAsRead called for', alerts.length, 'alerts');
     
     try {
-      // ใช้ Promise.all() แทน for loop - เร็วกว่าเพราะทำงานพร้อมกัน
-      await Promise.all(
+      // ใช้ Promise.allSettled() - จะไม่ fail ทั้งหมดถ้าบางตัว fail
+      const results = await Promise.allSettled(
         alerts.map(alert => markAlertAsRead(alert.id))
       );
+      
+      // ตรวจสอบผลลัพธ์
+      const successful = results.filter(result => result.status === 'fulfilled').length;
+      const failed = results.filter(result => result.status === 'rejected').length;
+      
+      console.log(`🔄 AlertPopup: ${successful} alerts marked as read, ${failed} failed`);
       
       // Clear all alerts from local state
       setAlerts([]);
       setSelectedAlertId(null);
       
-      console.log('🔄 AlertPopup: All alerts marked as read');
       onMarkAsRead?.();
       onClose();
     } catch (error) {
