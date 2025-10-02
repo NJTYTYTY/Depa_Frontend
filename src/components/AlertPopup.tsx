@@ -88,20 +88,17 @@ const AlertPopup: React.FC<AlertPopupProps> = ({
     console.log('🔄 AlertPopup: handleMarkAllAsRead called for', alerts.length, 'alerts');
     
     try {
-      // Mark all alerts as read one by one
-      for (const alert of alerts) {
-        await markAlertAsRead(alert.id);
-      }
+      // ใช้ Promise.all() แทน for loop - เร็วกว่าเพราะทำงานพร้อมกัน
+      await Promise.all(
+        alerts.map(alert => markAlertAsRead(alert.id))
+      );
       
       // Clear all alerts from local state
       setAlerts([]);
       setSelectedAlertId(null);
       
       console.log('🔄 AlertPopup: All alerts marked as read');
-      // Call parent callback
       onMarkAsRead?.();
-      
-      // Close popup
       onClose();
     } catch (error) {
       console.error('Error marking all alerts as read:', error);
