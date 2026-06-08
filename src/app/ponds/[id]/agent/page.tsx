@@ -108,65 +108,31 @@ export default function AgentPage() {
     console.log('🐟 All Ponds:', ponds)
 
     try {
-      console.log('Sending request to API with:', {
-        question: inputMessage,
-        pondId: pondId,
-        pondData: currentPond
-      })
+      console.log('Mocking AI agent request...')
+      
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 1500))
 
-      const response = await fetch('/api/agent/ask', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          question: inputMessage, 
-          pondId: pondId,
-          pondData: currentPond
-        }),
-      })
-
-      console.log('Response status:', response.status, response.statusText)
-
-      if (!response.ok) {
-        let errorData = null
-        try {
-          errorData = await response.json()
-        } catch (e) {
-          console.log('Could not parse error response as JSON')
-        }
-        
-        console.log('API Error Details:', {
-          status: response.status,
-          statusText: response.statusText,
-          errorData
-        })
-        
-        const errorMessage: Message = {
-          id: messages.length + 2,
-          content: `เกิดข้อผิดพลาด: ${errorData?.error?.message || response.statusText} (${response.status})`,
-          type: 'assistant',
-          timestamp: new Date()
-        }
-        setMessages(prevMessages => [...prevMessages, errorMessage])
-        return
+      let answer = "ขออภัยด้วยครับ ตอนนี้ระบบฐานข้อมูลจำลองไม่มีข้อมูลเชิงลึกเรื่องนี้ แต่โดยทั่วไปแล้ว "
+      const lowercaseInput = inputMessage.toLowerCase()
+      
+      if (lowercaseInput.includes('ปัญหา') || lowercaseInput.includes('เสี่ยง') || lowercaseInput.includes('เตือน')) {
+        answer = `จากการวิเคราะห์บ่อ ${currentPond?.name} สภาพน้ำและระดับออกซิเจน DO ยังคงปกติอยู่ที่ 6.2 mg/L ครับ แต่ควรเฝ้าระวังสีน้ำเขียวขุ่นเป็นพิเศษ หากมีแดดจัดอาจทำให้ออกซิเจนลดลงในช่วงกลางคืนได้ครับ`
+      } else if (lowercaseInput.includes('น้ำ') || lowercaseInput.includes('do') || lowercaseInput.includes('ph') || lowercaseInput.includes('อุณหภูมิ')) {
+        answer = `สำหรับบ่อ ${currentPond?.name} แนะนำรักษาค่า DO ไม่ต่ำกว่า 5.0 mg/L และ pH อยู่ระหว่าง 7.5 - 8.3 ครับ จากข้อมูลจำลองปัจจุบัน ค่า DO: 6.2 mg/L, pH: 7.8 และ อุณหภูมิ: 28.5 °C ถือว่าอยู่ในเกณฑ์ดีเยี่ยมและเหมาะสมกับการเติบโตของกุ้งครับ`
+      } else if (lowercaseInput.includes('โต') || lowercaseInput.includes('ขนาด') || lowercaseInput.includes('กุ้ง') || lowercaseInput.includes('น้ำหนัก')) {
+        answer = `ขนาดกุ้งเฉลี่ยในบ่อ ${currentPond?.name} ปัจจุบันวัดได้ 7.5 ซม. น้ำหนักประมาณ 12.0 กรัมครับ อัตราการเจริญเติบโต (ADG) อยู่ในเกณฑ์เฉลี่ยปกติของสัปดาห์นี้ครับ`
+      } else if (lowercaseInput.includes('โรค') || lowercaseInput.includes('ตาย') || lowercaseInput.includes('ลอย')) {
+        answer = `เพื่อป้องกันโรคในกุ้ง แนะนำให้ควบคุมปริมาณสารอินทรีย์และเศษอาหารก้นบ่อ โดยการยกยอตรวจสอบทุกครั้ง และหมั่นสังเกตไม่ให้มีกุ้งลอยหัวหรือเกาะขอบบ่อครับ หากพบระดับ DO ต่ำให้รีบเปิดกังหันน้ำทันที`
+      } else if (lowercaseInput.includes('อาหาร') || lowercaseInput.includes('ให้อาหาร') || lowercaseInput.includes('ยอ')) {
+        answer = `จากรูปอาหารบนยอล่าสุด ปริมาณการกินอาหารของกุ้งในบ่อ ${currentPond?.name} อยู่ในระดับปกติครับ (ไม่พบเศษอาหารเหลือค้างบนยอ) แนะนำให้รักษารอบการให้อาหารตามปกติและปรับตามน้ำหนักตัวกุ้งครับ`
+      } else {
+        answer = `บ่อ ${currentPond?.name} มีพื้นที่ประมาณ ${currentPond?.size || '10'} ไร่ ปล่อยกุ้งไปทั้งหมด ${currentPond?.shrimp_count || '50,000'} ตัว ขณะนี้ระบบตรวจสอบอัตโนมัติทำงานปกติครับ หากต้องการข้อมูลด้านใดเพิ่มเติม เช่น คุณภาพน้ำ ขนาดกุ้ง หรือตารางการยกยอ สามารถสอบถามได้เลยครับ!`
       }
 
-      const data = await response.json()
-      console.log('API Response:', data)
-      
-      if (!data.success) {
-        const errorMessage: Message = {
-          id: messages.length + 2,
-          content: `API Error: ${data.error?.message || 'ไม่สามารถประมวลผลคำถามได้'}`,
-          type: 'assistant',
-          timestamp: new Date()
-        }
-        setMessages(prevMessages => [...prevMessages, errorMessage])
-        return
-      }
-      
       const aiResponse: Message = {
         id: messages.length + 2,
-        content: data.data?.answer || 'ไม่พบคำตอบ',
+        content: answer,
         type: 'assistant',
         timestamp: new Date()
       }
@@ -175,7 +141,7 @@ export default function AgentPage() {
       console.log('Error sending message to AI:', error)
       const errorMessage: Message = {
         id: messages.length + 2,
-        content: `เกิดข้อผิดพลาดในการเชื่อมต่อ: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        content: `เกิดข้อผิดพลาดในการจำลองผู้ช่วย AI: ${error instanceof Error ? error.message : 'Unknown error'}`,
         type: 'assistant',
         timestamp: new Date()
       }

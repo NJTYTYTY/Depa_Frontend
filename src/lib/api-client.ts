@@ -219,7 +219,386 @@ class ApiClient {
     this.baseUrl = baseUrl
   }
 
+  private getMockResponse<T>(path: string, config?: RequestInit): T | null {
+    const method = config?.method || 'GET';
+    const cleanPath = path.split('?')[0];
+
+    // Helpers to extract pond ID
+    const getPondId = () => {
+      const match = path.match(/\/(?:ponds|sensors|alerts)\/([^\/]+)/);
+      return match ? match[1] : '1';
+    };
+
+    const pondId = getPondId();
+
+    // 1. Auth check
+    if (cleanPath.includes('/api/v1/auth/me')) {
+      return {
+        id: '1',
+        email: 'mock@example.com',
+        role: 'owner',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      } as any;
+    }
+
+    if (cleanPath.includes('/api/v1/auth/login')) {
+      return {
+        access_token: 'mock_token',
+        refresh_token: 'mock_refresh',
+        token_type: 'bearer',
+        expires_in: 3600
+      } as any;
+    }
+
+    if (cleanPath.includes('/api/v1/auth/refresh')) {
+      return {
+        access_token: 'mock_token',
+        refresh_token: 'mock_refresh',
+        token_type: 'bearer',
+        expires_in: 3600
+      } as any;
+    }
+
+    // 2. Alert endpoints
+    if (cleanPath.includes('/badge-count')) {
+      return { count: 1 } as any;
+    }
+    if (cleanPath.includes('/unread')) {
+      return [
+        {
+          id: 'a1',
+          pond_id: pondId,
+          title: 'ค่า DO ต่ำกว่าเกณฑ์',
+          severity: 'warning',
+          message: 'พบระดับออกซิเจนในน้ำ (DO) ลดลงต่ำกว่า 4.0 mg/L ควรเปิดเครื่องกังหันน้ำเพิ่มเติม',
+          tags: ['DO', 'water'],
+          created_at: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+          source: 'system'
+        }
+      ] as any;
+    }
+    if (cleanPath.includes('/stats')) {
+      return { total: 1, unread: 1, info: 0, warning: 1, critical: 0 } as any;
+    }
+    if (cleanPath.includes('/alerts/pond/')) {
+      return [
+        {
+          id: 'a1',
+          pond_id: pondId,
+          title: 'ค่า DO ต่ำกว่าเกณฑ์',
+          severity: 'warning',
+          message: 'พบระดับออกซิเจนในน้ำ (DO) ลดลงต่ำกว่า 4.0 mg/L ควรเปิดเครื่องกังหันน้ำเพิ่มเติม',
+          tags: ['DO', 'water'],
+          created_at: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+          source: 'system'
+        }
+      ] as any;
+    }
+    if (cleanPath.includes('/alerts/user/')) {
+      return [
+        {
+          id: 'a1',
+          pond_id: '1',
+          title: 'ค่า DO ต่ำกว่าเกณฑ์',
+          severity: 'warning',
+          message: 'พบระดับออกซิเจนในน้ำ (DO) ลดลงต่ำกว่า 4.0 mg/L ควรเปิดเครื่องกังหันน้ำเพิ่มเติม',
+          tags: ['DO', 'water'],
+          created_at: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+          source: 'system'
+        }
+      ] as any;
+    }
+
+    // 3. Sensor latest data
+    if (cleanPath.startsWith('/api/v1/sensors/latest/')) {
+      return {
+        success: true,
+        pondId: parseInt(pondId),
+        source: 'individual',
+        timestamp: new Date().toISOString(),
+        sensors: {
+          DO: { value: 6.2, type: 'numeric', status: 'green', timestamp: new Date().toISOString() },
+          pH: { value: 7.8, type: 'numeric', status: 'green', timestamp: new Date().toISOString() },
+          temperature: { value: 28.5, type: 'numeric', status: 'green', timestamp: new Date().toISOString() },
+          waterColor: { value: 'สีเขียวขุ่น', type: 'string', status: 'green', timestamp: new Date().toISOString() },
+          minerals_1: { value: 12.5, type: 'numeric', status: 'green', timestamp: new Date().toISOString() },
+          minerals_2: { value: 8.3, type: 'numeric', status: 'green', timestamp: new Date().toISOString() },
+          minerals_3: { value: 45.0, type: 'numeric', status: 'green', timestamp: new Date().toISOString() },
+          minerals_4: { value: 20.0, type: 'numeric', status: 'green', timestamp: new Date().toISOString() },
+          waterColorPicture: { value: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=500', type: 'url', status: 'info', timestamp: new Date().toISOString() },
+          PicColorwater: { value: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=500', type: 'url', status: 'info', timestamp: new Date().toISOString() },
+          PicKungOnWater: { value: 'https://images.unsplash.com/photo-1518467166-367ec940371a?w=500', type: 'url', status: 'info', timestamp: new Date().toISOString() },
+          kungOnWaterPicture: { value: 'https://images.unsplash.com/photo-1518467166-367ec940371a?w=500', type: 'url', status: 'info', timestamp: new Date().toISOString() }
+        }
+      } as any;
+    }
+
+    // 4. Batch data
+    if (cleanPath.startsWith('/api/v1/sensors/yorrkung-batches/') || cleanPath.startsWith('/api/v1/sensors/batches/')) {
+      return {
+        success: true,
+        message: 'ดึงข้อมูลสำเร็จ',
+        timestamp: new Date().toISOString(),
+        data: {
+          pondId: parseInt(pondId),
+          count: 2,
+          batches: [
+            {
+              id: 'b1',
+              pond_id: parseInt(pondId),
+              timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+              created_at: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+              source: 'raspi',
+              sensors: {
+                size_cm: { value: 7.2, type: 'numeric', status: 'green' },
+                size_gram: { value: 11.5, type: 'numeric', status: 'green' },
+                sizePicture: { value: 'https://images.unsplash.com/photo-1559737633-8b5d55977a91?w=500', type: 'url', status: 'info' },
+                foodPicture: { value: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=500', type: 'url', status: 'info' },
+                kungDinPicture: { value: 'https://images.unsplash.com/photo-1518467166-367ec940371a?w=500', type: 'url', status: 'info' }
+              }
+            },
+            {
+              id: 'b2',
+              pond_id: parseInt(pondId),
+              timestamp: new Date().toISOString(),
+              created_at: new Date().toISOString(),
+              source: 'raspi',
+              sensors: {
+                size_cm: { value: 7.5, type: 'numeric', status: 'green' },
+                size_gram: { value: 12.0, type: 'numeric', status: 'green' },
+                sizePicture: { value: 'https://images.unsplash.com/photo-1559737633-8b5d55977a91?w=500', type: 'url', status: 'info' },
+                foodPicture: { value: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=500', type: 'url', status: 'info' },
+                kungDinPicture: { value: 'https://images.unsplash.com/photo-1518467166-367ec940371a?w=500', type: 'url', status: 'info' }
+              }
+            }
+          ]
+        }
+      } as any;
+    }
+
+    // 5. Sensor graphs
+    if (cleanPath.startsWith('/api/v1/sensors/graph-simple/')) {
+      const urlParams = new URLSearchParams(path.split('?')[1] || '');
+      const sensorType = urlParams.get('sensor_types') || 'DO';
+      const actualHours = parseInt(urlParams.get('hours') || '24');
+      return {
+        success: true,
+        pond_id: parseInt(pondId),
+        time_range: {
+          start_time: new Date(Date.now() - actualHours * 60 * 60 * 1000).toISOString(),
+          end_time: new Date().toISOString()
+        },
+        total_points: 10,
+        sensors: {
+          [sensorType]: {
+            sensor_type: sensorType,
+            unit: sensorType === 'DO' ? 'mg/L' : sensorType === 'pH' ? '' : sensorType === 'temperature' ? '°C' : '',
+            data_points: Array.from({ length: 12 }).map((_, i) => ({
+              timestamp: new Date(Date.now() - (12 - i) * (actualHours / 12) * 60 * 60 * 1000).toISOString(),
+              value: sensorType === 'DO' ? 5.5 + Math.random() : sensorType === 'pH' ? 7.2 + Math.random() * 0.8 : sensorType === 'temperature' ? 27.5 + Math.random() * 2 : 10 + Math.random() * 5,
+              status: 'green'
+            }))
+          }
+        }
+      } as any;
+    }
+
+    if (cleanPath.startsWith('/api/v1/sensors/graph-shrimpsize/')) {
+      return {
+        success: true,
+        data: {
+          pondId: parseInt(pondId),
+          sensor_type: 'shrimpSize',
+          data_points: Array.from({ length: 10 }).map((_, i) => ({
+            timestamp: new Date(Date.now() - (10 - i) * 24 * 60 * 60 * 1000).toISOString(),
+            value: 5.0 + i * 0.25 + Math.random() * 0.2
+          }))
+        }
+      } as any;
+    }
+
+    // 6. Media endpoints
+    if (cleanPath.endsWith('/media')) {
+      return [
+        {
+          id: 'm1',
+          pond_id: pondId,
+          type: 'image',
+          url: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=500',
+          mime_type: 'image/jpeg',
+          captured_at: new Date().toISOString(),
+          meta: {}
+        }
+      ] as any;
+    }
+
+    // 7. History endpoints
+    if (cleanPath.endsWith('/history')) {
+      return [
+        {
+          id: 'h1',
+          pond_id: pondId,
+          type: 'sensor_reading',
+          title: 'บันทึกค่าเซ็นเซอร์',
+          message: 'ระดับออกซิเจน DO อยู่ที่ 6.2 mg/L',
+          timestamp: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+          source: 'system'
+        }
+      ] as any;
+    }
+
+    // 8. Routine settings and timer endpoints
+    if (cleanPath.includes('/routines') || cleanPath.includes('/schedules') || cleanPath.includes('/routine')) {
+      return {
+        enabled: true,
+        routines: {
+          enabled: true,
+          schedules: [
+            { id: 's1', time: '08:00', days: ['จันทร์', 'พุธ', 'ศุกร์'] },
+            { id: 's2', time: '16:00', days: ['จันทร์', 'พุธ', 'ศุกร์'] }
+          ]
+        },
+        schedules: [
+          { id: 's1', time: '08:00', days: ['จันทร์', 'พุธ', 'ศุกร์'] },
+          { id: 's2', time: '16:00', days: ['จันทร์', 'พุธ', 'ศุกร์'] }
+        ]
+      } as any;
+    }
+
+    // 9. Ponds endpoint
+    if (cleanPath === '/api/v1/ponds/') {
+      if (method === 'POST') {
+        // Return created pond
+        return {
+          id: String(Math.floor(Math.random() * 1000)),
+          name: 'บ่อใหม่จำลอง',
+          location: 'โซนทดสอบ',
+          notes: 'บ่อจำลองฝั่ง Frontend',
+          date: new Date().toISOString().split('T')[0],
+          size: 5,
+          dimensions: '50x50',
+          depth: 2.0,
+          shrimp_count: 20000,
+          owner_user_id: '1',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        } as any;
+      }
+
+      // Return list
+      return [
+        {
+          id: '1',
+          name: 'บ่อกุ้ง 1 Yokyor',
+          location: 'โซน A',
+          notes: 'เลี้ยงกุ้งขาวแวนนาไม บ่อทดสอบระบบยกยออัตโนมัติ',
+          date: '2026-05-01',
+          size: 10,
+          dimensions: '100x100',
+          depth: 3.0,
+          shrimp_count: 50000,
+          owner_user_id: '1',
+          created_at: '2026-05-01T00:00:00Z',
+          updated_at: '2026-05-01T00:00:00Z'
+        },
+        {
+          id: '2',
+          name: 'บ่อกุ้ง 2 Anemone',
+          location: 'โซน B',
+          notes: 'บ่อกุ้งดำคุณภาพสูง',
+          date: '2026-05-15',
+          size: 8,
+          dimensions: '80x80',
+          depth: 2.5,
+          shrimp_count: 40000,
+          owner_user_id: '1',
+          created_at: '2026-05-15T00:00:00Z',
+          updated_at: '2026-05-15T00:00:00Z'
+        }
+      ] as any;
+    }
+
+    if (cleanPath.startsWith('/api/v1/ponds/')) {
+      const id = pondId;
+      if (method === 'DELETE') {
+        return { success: true } as any;
+      }
+      if (method === 'PUT') {
+        return {
+          id,
+          name: 'แก้ไขบ่อกุ้งจำลอง',
+          location: 'โซน A',
+          notes: 'แก้ไขสำเร็จ',
+          date: '2026-05-01',
+          size: 10,
+          dimensions: '100x100',
+          depth: 3.0,
+          shrimp_count: 50000,
+          owner_user_id: '1',
+          created_at: '2026-05-01T00:00:00Z',
+          updated_at: '2026-05-01T00:00:00Z'
+        } as any;
+      }
+
+      // getPond
+      return {
+        id,
+        name: id === '2' ? 'บ่อกุ้ง 2 Anemone' : 'บ่อกุ้ง 1 Yokyor',
+        location: id === '2' ? 'โซน B' : 'โซน A',
+        notes: id === '2' ? 'บ่อกุ้งดำคุณภาพสูง' : 'เลี้ยงกุ้งขาวแวนนาไม บ่อทดสอบระบบยกยออัตโนมัติ',
+        date: id === '2' ? '2026-05-15' : '2026-05-01',
+        size: id === '2' ? 8 : 10,
+        dimensions: id === '2' ? '80x80' : '100x100',
+        depth: id === '2' ? 2.5 : 3.0,
+        shrimp_count: id === '2' ? 40000 : 50000,
+        owner_user_id: '1',
+        created_at: '2026-05-01T00:00:00Z',
+        updated_at: '2026-05-01T00:00:00Z'
+      } as any;
+    }
+
+    // 10. Push settings
+    if (cleanPath.includes('/push/settings')) {
+      return {
+        user_id: 1,
+        sensor_alerts: true,
+        pond_updates: true,
+        system_notifications: true,
+        maintenance_alerts: true
+      } as any;
+    }
+
+    if (cleanPath.includes('/push/vapid-keys')) {
+      return {
+        public_key: 'mock_key',
+        private_key: 'mock_key',
+        email: 'mock@example.com'
+      } as any;
+    }
+
+    // 11. Health
+    if (cleanPath.includes('/health')) {
+      return { status: 'ok' } as any;
+    }
+
+    // Fallback for post actions
+    if (method === 'POST' || method === 'PUT' || method === 'DELETE') {
+      return { success: true } as any;
+    }
+
+    return null;
+  }
+
   private async request<T>(path: string, config?: RequestInit): Promise<ApiResponse<T>> {
+    // Intercept with mock data
+    const mockData = this.getMockResponse<T>(path, config);
+    if (mockData !== null) {
+      console.log(`[Mock API] Path: ${path}, Returning mock data`);
+      return { data: mockData };
+    }
+
     const url = `${this.baseUrl}${path}`
     const defaultConfig: RequestInit = {
       method: 'GET',

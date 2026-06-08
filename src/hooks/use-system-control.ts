@@ -28,11 +28,12 @@ export function useSystemControl() {
   } = useQuery<SystemStatus>({
     queryKey: SYSTEM_STATUS_QUERY_KEY,
     queryFn: async () => {
-      const response = await fetch(`${API_BASE_URL}/api/v1/system/status`)
-      if (!response.ok) {
-        throw new Error('Failed to fetch system status')
+      // Mock system status response
+      return {
+        enabled: true,
+        last_check: new Date().toISOString(),
+        status: 'running'
       }
-      return response.json()
     },
     refetchInterval: 5000, // Refetch every 5 seconds
     retry: 3
@@ -41,20 +42,12 @@ export function useSystemControl() {
   // Mutation for toggling system
   const toggleMutation = useMutation({
     mutationFn: async (action: 'on' | 'off') => {
-      const response = await fetch(`${API_BASE_URL}/api/v1/system/toggle`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ action })
-      })
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.detail || `Failed to ${action} system`)
+      // Mock system toggle response
+      return {
+        enabled: action === 'on',
+        last_check: new Date().toISOString(),
+        status: action === 'on' ? 'running' : 'stopped'
       }
-      
-      return response.json()
     },
     onSuccess: (data) => {
       // Update the cache with new status
@@ -114,11 +107,16 @@ export function useSystemRoutineSettings() {
   } = useQuery({
     queryKey: ['system', 'routine-settings'],
     queryFn: async () => {
-      const response = await fetch(`${API_BASE_URL}/api/v1/system/routine-settings`)
-      if (!response.ok) {
-        throw new Error('Failed to fetch routine settings')
+      // Mock routine settings response
+      return {
+        data: {
+          enabled: true,
+          schedules: [
+            { id: '1', time: '08:00', days: ['จันทร์', 'พุธ', 'ศุกร์'] },
+            { id: '2', time: '16:00', days: ['จันทร์', 'พุธ', 'ศุกร์'] }
+          ]
+        }
       }
-      return response.json()
     },
     refetchInterval: 10000, // Refetch every 10 seconds
     retry: 3

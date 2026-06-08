@@ -18,8 +18,23 @@ export default function HistoryPage() {
   const params = useParams()
   const pondId = params.id as string
   const { data: ponds } = usePonds()
-  const [logFiles, setLogFiles] = useState<LogFile[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [logFiles, setLogFiles] = useState<LogFile[]>([
+    {
+      id: 'log-1',
+      name: `log_shrimp_pond_${pondId}_2026-06-08.csv`,
+      date: '2026-06-08',
+      size: '14.2 KB',
+      createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+    },
+    {
+      id: 'log-2',
+      name: `log_shrimp_pond_${pondId}_2026-06-07.csv`,
+      date: '2026-06-07',
+      size: '15.8 KB',
+      createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
+    }
+  ])
+  const [isLoading, setIsLoading] = useState(false)
   const [isAdding, setIsAdding] = useState(false)
   
   // Find the current pond
@@ -29,82 +44,53 @@ export default function HistoryPage() {
 
   // Fetch log files from backend
   const fetchLogFiles = async () => {
-    try {
-      setIsLoading(true)
-      const response = await fetch(`/api/logs/${pondId}`)
-      if (response.ok) {
-        const data = await response.json()
-        setLogFiles(data.logFiles || [])
-      }
-    } catch (error) {
-      // Handle error silently
-    } finally {
-      setIsLoading(false)
-    }
+    setIsLoading(false)
   }
 
   // Add new log file
   const addLogFile = async () => {
-    try {
-      setIsAdding(true)
-      const response = await fetch('/api/logs', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pondId })
-      })
-      
-      if (response.ok) {
-        await fetchLogFiles() // Refresh the list
-        alert('เพิ่มไฟล์ log เรียบร้อยแล้ว')
-      } else {
-        alert('เกิดข้อผิดพลาดในการเพิ่มไฟล์ log')
-      }
-    } catch (error) {
-      alert('เกิดข้อผิดพลาดในการเพิ่มไฟล์ log')
-    } finally {
-      setIsAdding(false)
-    }
+    setIsAdding(true)
+    setTimeout(() => {
+      const newDate = new Date();
+      const dateString = newDate.toISOString().split('T')[0];
+      const newLog: LogFile = {
+        id: `log-${Date.now()}`,
+        name: `log_shrimp_pond_${pondId}_${dateString}.csv`,
+        date: dateString,
+        size: '12.5 KB',
+        createdAt: newDate.toISOString()
+      };
+      setLogFiles(prev => [newLog, ...prev]);
+      setIsAdding(false);
+      alert('เพิ่มไฟล์ log เรียบร้อยแล้ว (จำลองฝั่ง Frontend)');
+    }, 500);
   }
 
   // Delete log file
   const deleteLogFile = async (logId: string) => {
     if (!confirm('คุณแน่ใจหรือไม่ที่จะลบไฟล์ log นี้?')) return
-    
-    try {
-      const response = await fetch(`/api/logs/delete/${logId}`, {
-        method: 'DELETE'
-      })
-      
-      if (response.ok) {
-        await fetchLogFiles() // Refresh the list
-        alert('ลบไฟล์ log เรียบร้อยแล้ว')
-      } else {
-        alert('เกิดข้อผิดพลาดในการลบไฟล์ log')
-      }
-    } catch (error) {
-      alert('เกิดข้อผิดพลาดในการลบไฟล์ log')
-    }
+    setLogFiles(prev => prev.filter(log => log.id !== logId));
+    alert('ลบไฟล์ log เรียบร้อยแล้ว (จำลองฝั่ง Frontend)');
   }
 
   // Download log file
   const downloadFile = async (logId: string, fileName: string) => {
     try {
-      const response = await fetch(`/api/logs/download/${logId}`)
-      if (response.ok) {
-        const blob = await response.blob()
-        const url = window.URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = fileName
-        document.body.appendChild(a)
-        a.click()
-        window.URL.revokeObjectURL(url)
-        document.body.removeChild(a)
-      } else {
-        alert('เกิดข้อผิดพลาดในการดาวน์โหลดไฟล์')
-      }
+      // Generate dummy CSV data client-side
+      const csvContent = "data:text/csv;charset=utf-8,Timestamp,DO (mg/L),pH,Temp (C)\n" +
+                         `${new Date().toISOString()},6.2,7.8,28.5\n` +
+                         `${new Date(Date.now() - 3600000).toISOString()},6.0,7.7,28.2\n` +
+                         `${new Date(Date.now() - 7200000).toISOString()},5.8,7.9,28.0`;
+      
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", fileName);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     } catch (error) {
-      alert('เกิดข้อผิดพลาดในการดาวน์โหลดไฟล์')
+      alert('เกิดข้อผิดพลาดในการดาวน์โหลดไฟล์');
     }
   }
 
