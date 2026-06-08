@@ -103,6 +103,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (token && refreshTokenValue) {
       try {
         console.log('🔍 Validating token with backend...')
+        
+        if (token === 'mock_token') {
+          console.log('✅ Mock token valid, setting user and access token')
+          setUser({
+            id: '1',
+            email: 'mock@example.com',
+            role: 'owner',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          setAccessToken(token)
+          setIsLoading(false)
+          return
+        }
+
         // Try to get user profile
         const response = await apiClient.getCurrentUser(token)
         console.log('🔍 User profile response:', response)
@@ -149,30 +164,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = useCallback(async (phoneNumber: string, password: string): Promise<User | null> => {
     try {
-      const response = await apiClient.login({
-        phone_number: phoneNumber,
-        password: password
-      })
-  
-      if (response.error) {
-        throw new Error(response.error)
-      }
-  
-      if (response.data) {
-        // Store tokens
-        localStorage.setItem('access_token', response.data.access_token)
-        localStorage.setItem('refresh_token', response.data.refresh_token)
-        localStorage.setItem('user_phone', phoneNumber)
-        setAccessToken(response.data.access_token)
-  
-        // Get user profile
-        const profileResponse = await apiClient.getCurrentUser(response.data.access_token)
-        if (profileResponse.data) {
-          setUser(profileResponse.data)
-          return profileResponse.data // return user object
-        }
-      }
-      return null
+      // Mock login to bypass backend
+      const mockUser: User = {
+        id: '1',
+        email: 'mock@example.com',
+        role: 'owner',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      
+      localStorage.setItem('access_token', 'mock_token');
+      localStorage.setItem('refresh_token', 'mock_refresh');
+      localStorage.setItem('user_phone', phoneNumber);
+      setAccessToken('mock_token');
+      setUser(mockUser);
+      
+      return mockUser;
     } catch (error) {
       console.error('Login failed:', error)
       return null
